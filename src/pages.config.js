@@ -4,6 +4,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import GenerateLearningPlan from './pages/GenerateLearningPlan';
 import LearningPlanView from './pages/LearningPlanView';
 import GamificationDashboard from './pages/GamificationDashboard';
+import CurriculumDashboard from './pages/CurriculumDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -14,6 +15,7 @@ export const PAGES = {
     "GenerateLearningPlan": GenerateLearningPlan,
     "LearningPlanView": LearningPlanView,
     "GamificationDashboard": GamificationDashboard,
+    "CurriculumDashboard": CurriculumDashboard,
 }
 
 export const pagesConfig = {
