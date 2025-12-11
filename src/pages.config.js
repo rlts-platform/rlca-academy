@@ -1,6 +1,8 @@
 import StudentDashboard from './pages/StudentDashboard';
 import ParentDashboard from './pages/ParentDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import GenerateLearningPlan from './pages/GenerateLearningPlan';
+import LearningPlanView from './pages/LearningPlanView';
 import __Layout from './Layout.jsx';
 
 
@@ -8,6 +10,8 @@ export const PAGES = {
     "StudentDashboard": StudentDashboard,
     "ParentDashboard": ParentDashboard,
     "AdminDashboard": AdminDashboard,
+    "GenerateLearningPlan": GenerateLearningPlan,
+    "LearningPlanView": LearningPlanView,
 }
 
 export const pagesConfig = {

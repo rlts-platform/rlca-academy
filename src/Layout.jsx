@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { GraduationCap, Home, Users, UserCircle, LogOut } from 'lucide-react';
+import { GraduationCap, Home, Users, UserCircle, LogOut, Brain } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 export default function Layout({ children, currentPageName }) {
@@ -65,6 +65,17 @@ export default function Layout({ children, currentPageName }) {
                 >
                   <Users className="w-4 h-4" />
                   <span className="hidden md:inline">Parent</span>
+                </Link>
+                <Link
+                  to={createPageUrl('LearningPlanView')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                    currentPageName === 'LearningPlanView' || currentPageName === 'GenerateLearningPlan'
+                      ? 'bg-purple-100 text-purple-700 font-semibold'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <Brain className="w-4 h-4" />
+                  <span className="hidden md:inline">AI Plan</span>
                 </Link>
                 {user.role === 'admin' && (
                   <Link
