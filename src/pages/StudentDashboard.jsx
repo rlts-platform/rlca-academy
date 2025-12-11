@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { GraduationCap, BookOpen, Calendar, TrendingUp, Award, Clock, Brain, Sparkles } from 'lucide-react';
+import { GraduationCap, BookOpen, Calendar, TrendingUp, Award, Clock, Brain, Sparkles, Gamepad2, Zap } from 'lucide-react';
 import StatsCard from '../components/dashboard/StatsCard';
 import GradesList from '../components/dashboard/GradesList';
 import AttendanceCalendar from '../components/dashboard/AttendanceCalendar';
 import UpcomingAssignments from '../components/dashboard/UpcomingAssignments';
+import PointsDisplay from '../components/gamification/PointsDisplay';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -75,6 +76,16 @@ export default function StudentDashboard() {
   });
 
   const hasActivePlan = learningPlans.length > 0 && learningPlans.some(plan => plan.status === "Active");
+
+  const { data: progress } = useQuery({
+    queryKey: ['student-progress', studentProfile?.id],
+    queryFn: async () => {
+      if (!studentProfile) return null;
+      const progressRecords = await base44.entities.StudentProgress.filter({ student_id: studentProfile.id });
+      return progressRecords[0] || null;
+    },
+    enabled: !!studentProfile
+  });
 
   const calculateAverageGrade = () => {
     if (!grades || grades.length === 0) return 0;
@@ -153,10 +164,10 @@ export default function StudentDashboard() {
             color="blue"
           />
           <StatsCard
-            icon={ClipboardList}
-            title="Assignments"
-            value={assignments.length}
-            subtitle="Due soon"
+            icon={Zap}
+            title="Total XP"
+            value={progress?.total_points || 0}
+            subtitle={`Level ${progress?.level || 1}`}
             color="gold"
           />
           <StatsCard
@@ -167,6 +178,21 @@ export default function StudentDashboard() {
             color="green"
           />
         </div>
+
+        {/* Gamification Points Display */}
+        {progress && (
+          <div className="mb-8">
+            <PointsDisplay progress={progress} />
+            <div className="mt-4 text-center">
+              <Link to={createPageUrl('GamificationDashboard')}>
+                <Button variant="outline" className="gap-2">
+                  <Gamepad2 className="w-4 h-4" />
+                  View Full Gamification Hub
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* AI Learning Plan CTA */}
         <motion.div

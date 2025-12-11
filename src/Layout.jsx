@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { GraduationCap, Home, Users, UserCircle, LogOut, Brain } from 'lucide-react';
+import { GraduationCap, Home, Users, UserCircle, LogOut, Brain, Gamepad2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 export default function Layout({ children, currentPageName }) {
@@ -76,6 +76,17 @@ export default function Layout({ children, currentPageName }) {
                 >
                   <Brain className="w-4 h-4" />
                   <span className="hidden md:inline">AI Plan</span>
+                </Link>
+                <Link
+                  to={createPageUrl('GamificationDashboard')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                    currentPageName === 'GamificationDashboard'
+                      ? 'bg-purple-100 text-purple-700 font-semibold'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <Gamepad2 className="w-4 h-4" />
+                  <span className="hidden md:inline">Rewards</span>
                 </Link>
                 {user.role === 'admin' && (
                   <Link
