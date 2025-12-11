@@ -5,6 +5,7 @@ import GenerateLearningPlan from './pages/GenerateLearningPlan';
 import LearningPlanView from './pages/LearningPlanView';
 import GamificationDashboard from './pages/GamificationDashboard';
 import CurriculumDashboard from './pages/CurriculumDashboard';
+import QuizView from './pages/QuizView';
 import __Layout from './Layout.jsx';
 
 
@@ -16,6 +17,7 @@ export const PAGES = {
     "LearningPlanView": LearningPlanView,
     "GamificationDashboard": GamificationDashboard,
     "CurriculumDashboard": CurriculumDashboard,
+    "QuizView": QuizView,
 }
 
 export const pagesConfig = {
