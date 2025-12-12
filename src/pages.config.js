@@ -13,6 +13,7 @@ import ParentCommunication from './pages/ParentCommunication';
 import TeacherGrading from './pages/TeacherGrading';
 import AITutor from './pages/AITutor';
 import ReportCards from './pages/ReportCards';
+import StudentOnboarding from './pages/StudentOnboarding';
 import __Layout from './Layout.jsx';
 
 
@@ -32,6 +33,7 @@ export const PAGES = {
     "TeacherGrading": TeacherGrading,
     "AITutor": AITutor,
     "ReportCards": ReportCards,
+    "StudentOnboarding": StudentOnboarding,
 }
 
 export const pagesConfig = {
