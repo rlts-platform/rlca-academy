@@ -14,13 +14,16 @@ export default function BasicInfoForm({ data, onComplete, onBack }) {
     date_of_birth: data.date_of_birth || '',
     gender: data.gender || '',
     learning_preferences: data.learning_preferences || [],
-    interests: data.interests || []
+    interests: data.interests || [],
+    parent_full_name: data.parent_full_name || '',
+    parent_email: data.parent_email || '',
+    parent_phone: data.parent_phone || ''
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.legal_first_name || !formData.legal_last_name || !formData.date_of_birth) {
-      alert('Please fill in all required fields');
+    if (!formData.legal_first_name || !formData.legal_last_name || !formData.date_of_birth || !formData.parent_full_name || !formData.parent_email) {
+      alert('Please fill in all required fields (including parent information)');
       return;
     }
     onComplete(formData);
@@ -95,38 +98,73 @@ export default function BasicInfoForm({ data, onComplete, onBack }) {
               <SelectContent>
                 <SelectItem value="Male">Male</SelectItem>
                 <SelectItem value="Female">Female</SelectItem>
-                <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div>
-            <Label className="mb-3 block">Learning Preferences</Label>
+            <Label className="mb-3 block">Learning Preferences (Select all that apply)</Label>
             <div className="grid grid-cols-2 gap-3">
               {['Visual', 'Reading', 'Hands-on', 'Mixed'].map(pref => (
-                <div key={pref} className="flex items-center space-x-2">
+                <div key={pref} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer" onClick={() => togglePreference(pref)}>
                   <Checkbox
+                    id={`pref-${pref}`}
                     checked={formData.learning_preferences.includes(pref)}
                     onCheckedChange={() => togglePreference(pref)}
                   />
-                  <label className="text-sm">{pref}</label>
+                  <label htmlFor={`pref-${pref}`} className="text-sm cursor-pointer flex-1">{pref}</label>
                 </div>
               ))}
             </div>
           </div>
 
           <div>
-            <Label className="mb-3 block">Interests</Label>
+            <Label className="mb-3 block">Interests (Select all that apply)</Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {['Sports', 'Art', 'Music', 'Building', 'Technology', 'Writing', 'Science', 'Reading'].map(interest => (
-                <div key={interest} className="flex items-center space-x-2">
+                <div key={interest} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer" onClick={() => toggleInterest(interest)}>
                   <Checkbox
+                    id={`interest-${interest}`}
                     checked={formData.interests.includes(interest)}
                     onCheckedChange={() => toggleInterest(interest)}
                   />
-                  <label className="text-sm">{interest}</label>
+                  <label htmlFor={`interest-${interest}`} className="text-sm cursor-pointer flex-1">{interest}</label>
                 </div>
               ))}
+            </div>
+          </div>
+
+          <div className="border-t pt-6 mt-6">
+            <h3 className="text-lg font-semibold mb-4 text-purple-700">Parent/Guardian Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <Label>Parent/Guardian Full Name *</Label>
+                <Input
+                  value={formData.parent_full_name}
+                  onChange={(e) => setFormData({ ...formData, parent_full_name: e.target.value })}
+                  placeholder="John Smith"
+                  required
+                />
+              </div>
+              <div>
+                <Label>Parent/Guardian Email *</Label>
+                <Input
+                  type="email"
+                  value={formData.parent_email}
+                  onChange={(e) => setFormData({ ...formData, parent_email: e.target.value })}
+                  placeholder="parent@example.com"
+                  required
+                />
+              </div>
+              <div>
+                <Label>Parent/Guardian Phone (Optional)</Label>
+                <Input
+                  type="tel"
+                  value={formData.parent_phone}
+                  onChange={(e) => setFormData({ ...formData, parent_phone: e.target.value })}
+                  placeholder="(555) 123-4567"
+                />
+              </div>
             </div>
           </div>
 
