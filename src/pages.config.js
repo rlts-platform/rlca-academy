@@ -9,6 +9,7 @@ import QuizView from './pages/QuizView';
 import StudentAssignments from './pages/StudentAssignments';
 import AssignmentSubmission from './pages/AssignmentSubmission';
 import LessonViewer from './pages/LessonViewer';
+import ParentCommunication from './pages/ParentCommunication';
 import __Layout from './Layout.jsx';
 
 
@@ -24,6 +25,7 @@ export const PAGES = {
     "StudentAssignments": StudentAssignments,
     "AssignmentSubmission": AssignmentSubmission,
     "LessonViewer": LessonViewer,
+    "ParentCommunication": ParentCommunication,
 }
 
 export const pagesConfig = {
