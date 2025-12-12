@@ -31,7 +31,7 @@ export default function Layout({ children, currentPageName }) {
       <header className="bg-white/80 backdrop-blur-md border-b border-purple-100 shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <Link to={createPageUrl('StudentDashboard')} className="flex items-center gap-3 group">
+            <Link to={createPageUrl('HomePage')} className="flex items-center gap-3 group">
               <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
                 <GraduationCap className="w-7 h-7 text-white" />
               </div>

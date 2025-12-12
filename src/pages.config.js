@@ -15,6 +15,7 @@ import AITutor from './pages/AITutor';
 import ReportCards from './pages/ReportCards';
 import StudentOnboarding from './pages/StudentOnboarding';
 import GetStarted from './pages/GetStarted';
+import HomePage from './pages/HomePage';
 import __Layout from './Layout.jsx';
 
 
@@ -36,6 +37,7 @@ export const PAGES = {
     "ReportCards": ReportCards,
     "StudentOnboarding": StudentOnboarding,
     "GetStarted": GetStarted,
+    "HomePage": HomePage,
 }
 
 export const pagesConfig = {
