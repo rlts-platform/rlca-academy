@@ -3,12 +3,13 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { BookOpen, Plus, Search, Sparkles } from "lucide-react";
+import { BookOpen, Plus, Search, Sparkles, Target, BookTemplate } from "lucide-react";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import SubjectCard from '../components/curriculum/SubjectCard';
 import AIGenerationModal from '../components/curriculum/AIGenerationModal';
+import TemplateLibrary from '../components/curriculum/TemplateLibrary';
 
 export default function CurriculumDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -19,6 +20,11 @@ export default function CurriculumDashboard() {
   const { data: subjects = [] } = useQuery({
     queryKey: ['subjects'],
     queryFn: () => base44.entities.Subject.list()
+  });
+
+  const { data: projects = [] } = useQuery({
+    queryKey: ['projects'],
+    queryFn: () => base44.entities.ProjectModule.list()
   });
 
   const createSubjectMutation = useMutation({
@@ -203,6 +209,14 @@ Format the response as a structured curriculum plan.`;
             <TabsTrigger value="all">All Subjects</TabsTrigger>
             <TabsTrigger value="published">Published</TabsTrigger>
             <TabsTrigger value="draft">Drafts</TabsTrigger>
+            <TabsTrigger value="projects">
+              <Target className="w-4 h-4 mr-2" />
+              Projects
+            </TabsTrigger>
+            <TabsTrigger value="templates">
+              <BookTemplate className="w-4 h-4 mr-2" />
+              Templates
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="all">
@@ -242,6 +256,42 @@ Format the response as a structured curriculum plan.`;
                 />
               ))}
             </div>
+          </TabsContent>
+
+          <TabsContent value="projects">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {projects.map(project => (
+                <Card key={project.id} className="shadow-lg hover:shadow-xl transition-shadow cursor-pointer border-l-4 border-green-500">
+                  <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
+                    <div className="flex items-center gap-2">
+                      <Target className="w-5 h-5 text-green-600" />
+                      <CardTitle className="text-lg">{project.title}</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4">
+                    <p className="text-sm text-gray-600 mb-3">{project.description}</p>
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>{project.milestones?.length || 0} milestones</span>
+                      <span>{project.duration_weeks} weeks</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            {projects.length === 0 && (
+              <div className="text-center py-16">
+                <Target className="w-20 h-20 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No project modules yet</h3>
+                <p className="text-gray-600">Create project-based learning modules from unit pages</p>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="templates">
+            <TemplateLibrary
+              onSelectTemplate={(template) => console.log('Template selected:', template)}
+              onCreateNew={() => alert('Save current lesson as template from lesson editor')}
+            />
           </TabsContent>
         </Tabs>
 
