@@ -72,9 +72,8 @@ export default function OwnerControlPanel() {
     });
   };
 
-  const handleRefresh = () => {
-    refetchLogs();
-    refetchIssues();
+  const handleRefresh = async () => {
+    await Promise.all([refetchLogs(), refetchIssues()]);
   };
 
   if (!currentUser) {
