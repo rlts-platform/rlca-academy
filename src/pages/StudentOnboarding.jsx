@@ -66,8 +66,19 @@ export default function StudentOnboarding() {
     mutationFn: async (data) => {
       const onboardingRecord = await base44.entities.StudentOnboarding.create(data);
       
-      // Also create the actual Student entity
-      await base44.entities.Student.create({
+      // Create parent record if it doesn't exist
+      const existingParents = await base44.entities.Parent.filter({ email: data.parent_email });
+      if (existingParents.length === 0) {
+        await base44.entities.Parent.create({
+          full_name: data.parent_full_name,
+          email: data.parent_email,
+          phone: data.parent_phone || '',
+          student_ids: []
+        });
+      }
+      
+      // Create the actual Student entity
+      const student = await base44.entities.Student.create({
         full_name: `${data.legal_first_name} ${data.legal_last_name}`,
         age: data.age,
         grade_level: data.recommended_grade || data.age_estimate_grade,
