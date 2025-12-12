@@ -132,8 +132,8 @@ export default function Layout({ children, currentPageName }) {
       <footer className="bg-white/60 backdrop-blur-sm border-t border-purple-100 mt-12">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="text-center text-gray-600">
-            <p className="text-sm">© 2024 Royal Kids Academy. All rights reserved.</p>
-            <p className="text-xs mt-2">Empowering students through personalized education</p>
+            <p className="text-sm">© 2024 Royal Legends Children Academy. All rights reserved.</p>
+            <p className="text-xs mt-2">Raising leaders grounded in truth, excellence, and purpose</p>
           </div>
         </div>
       </footer>
