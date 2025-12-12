@@ -129,7 +129,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Sign In/Sign Up Portal */}
+      {/* Call to Action Portal */}
       <section className="max-w-7xl mx-auto px-6 py-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -138,82 +138,48 @@ export default function HomePage() {
         >
           <div className="text-center mb-8">
             <h2 className="text-4xl font-bold text-gray-900 mb-3">Begin Your Journey</h2>
-            <p className="text-lg text-gray-600">Create an account or sign in to access your personalized learning portal</p>
+            <p className="text-lg text-gray-600">Access your personalized learning portal</p>
           </div>
 
-          <Card className="max-w-2xl mx-auto shadow-2xl">
-            <CardContent className="p-6">
-              <Tabs defaultValue="signup">
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="signup">Create Account</TabsTrigger>
-                  <TabsTrigger value="signin">Sign In</TabsTrigger>
-                </TabsList>
+          <div className="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="shadow-2xl hover:shadow-3xl transition-shadow">
+              <CardHeader className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+                <CardTitle className="text-center">New Family</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 text-center">
+                <Sparkles className="w-16 h-16 text-purple-600 mx-auto mb-4" />
+                <p className="text-gray-600 mb-6">
+                  Start with our student placement questionnaire to find the perfect grade level and learning path.
+                </p>
+                <Button
+                  onClick={() => window.location.href = '/StudentOnboarding'}
+                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  size="lg"
+                >
+                  Get Started
+                </Button>
+              </CardContent>
+            </Card>
 
-                <TabsContent value="signup">
-                  <form onSubmit={handleSignUp} className="space-y-4">
-                    <div>
-                      <Label>Parent/Guardian Full Name</Label>
-                      <Input
-                        value={signUpData.fullName}
-                        onChange={(e) => setSignUpData({...signUpData, fullName: e.target.value})}
-                        placeholder="John Smith"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label>Email Address</Label>
-                      <Input
-                        type="email"
-                        value={signUpData.email}
-                        onChange={(e) => setSignUpData({...signUpData, email: e.target.value})}
-                        placeholder="parent@example.com"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label>Password</Label>
-                      <Input
-                        type="password"
-                        value={signUpData.password}
-                        onChange={(e) => setSignUpData({...signUpData, password: e.target.value})}
-                        placeholder="Create a secure password"
-                        required
-                      />
-                    </div>
-                    <Button
-                      type="submit"
-                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                      size="lg"
-                    >
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Create Account & Start Onboarding
-                    </Button>
-                    <p className="text-xs text-center text-gray-500">
-                      By creating an account, you agree to our terms and conditions
-                    </p>
-                  </form>
-                </TabsContent>
-
-                <TabsContent value="signin">
-                  <div className="space-y-4 py-8 text-center">
-                    <p className="text-gray-600 mb-6">
-                      Already have an account? Sign in to access your dashboard and continue your learning journey.
-                    </p>
-                    <Button
-                      onClick={() => base44.auth.redirectToLogin()}
-                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                      size="lg"
-                    >
-                      Sign In to Dashboard
-                    </Button>
-                    <p className="text-xs text-gray-500 mt-4">
-                      Forgot your password? Contact support
-                    </p>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
+            <Card className="shadow-2xl hover:shadow-3xl transition-shadow">
+              <CardHeader className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
+                <CardTitle className="text-center">Returning Family</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 text-center">
+                <Users className="w-16 h-16 text-blue-600 mx-auto mb-4" />
+                <p className="text-gray-600 mb-6">
+                  Sign in to access your dashboard, view progress, and continue your learning journey.
+                </p>
+                <Button
+                  onClick={() => base44.auth.redirectToLogin()}
+                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                  size="lg"
+                >
+                  Sign In
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </motion.div>
       </section>
 
