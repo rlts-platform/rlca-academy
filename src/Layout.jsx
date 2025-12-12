@@ -141,6 +141,17 @@ export default function Layout({ children, currentPageName }) {
                       <UserCircle className="w-4 h-4" />
                       <span className="hidden md:inline">Admin</span>
                     </Link>
+                    <Link
+                      to={createPageUrl('EnrollmentManagement')}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                        currentPageName === 'EnrollmentManagement'
+                          ? 'bg-purple-100 text-purple-700 font-semibold'
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      <Users className="w-4 h-4" />
+                      <span className="hidden md:inline">Enrollments</span>
+                    </Link>
                     {user.email === 'jarivera43019@gmail.com' && (
                       <Link
                         to={createPageUrl('OwnerControlPanel')}

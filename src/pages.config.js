@@ -21,6 +21,7 @@ import ClubDirectory from './pages/ClubDirectory';
 import ClubDetail from './pages/ClubDetail';
 import ClubManagement from './pages/ClubManagement';
 import ClubEventDetail from './pages/ClubEventDetail';
+import EnrollmentManagement from './pages/EnrollmentManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -48,6 +49,7 @@ export const PAGES = {
     "ClubDetail": ClubDetail,
     "ClubManagement": ClubManagement,
     "ClubEventDetail": ClubEventDetail,
+    "EnrollmentManagement": EnrollmentManagement,
 }
 
 export const pagesConfig = {
