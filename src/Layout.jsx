@@ -1,9 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { GraduationCap, Home, Users, UserCircle, LogOut, Brain, Gamepad2 } from 'lucide-react';
+import { GraduationCap, Home, Users, UserCircle, LogOut, Brain, Gamepad2, Activity } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
+import ActivityMonitor from '@/components/monitoring/ActivityMonitor';
 
 export default function Layout({ children, currentPageName }) {
   const [user, setUser] = React.useState(null);
@@ -26,7 +27,8 @@ export default function Layout({ children, currentPageName }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50">
+    <ActivityMonitor>
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md border-b border-purple-100 shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -116,17 +118,32 @@ export default function Layout({ children, currentPageName }) {
                   <span className="hidden md:inline">AI Tutor</span>
                 </Link>
                 {user.role === 'admin' && (
-                  <Link
-                    to={createPageUrl('AdminDashboard')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                      currentPageName === 'AdminDashboard'
-                        ? 'bg-purple-100 text-purple-700 font-semibold'
-                        : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    <UserCircle className="w-4 h-4" />
-                    <span className="hidden md:inline">Admin</span>
-                  </Link>
+                  <>
+                    <Link
+                      to={createPageUrl('AdminDashboard')}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                        currentPageName === 'AdminDashboard'
+                          ? 'bg-purple-100 text-purple-700 font-semibold'
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      <UserCircle className="w-4 h-4" />
+                      <span className="hidden md:inline">Admin</span>
+                    </Link>
+                    {user.email === 'jarivera43019@gmail.com' && (
+                      <Link
+                        to={createPageUrl('OwnerControlPanel')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                          currentPageName === 'OwnerControlPanel'
+                            ? 'bg-purple-100 text-purple-700 font-semibold'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        <Activity className="w-4 h-4" />
+                        <span className="hidden md:inline">Monitor</span>
+                      </Link>
+                    )}
+                  </>
                 )}
                 <button
                   onClick={handleLogout}
@@ -160,6 +177,7 @@ export default function Layout({ children, currentPageName }) {
           --primary-foreground: 255 255 255;
         }
       `}</style>
-    </div>
-  );
-}
+      </div>
+      </ActivityMonitor>
+      );
+      }
