@@ -34,19 +34,21 @@ export default function BasicInfoForm({ data, onComplete, onBack }) {
   };
 
   const togglePreference = (pref) => {
-    const currentPrefs = formData.learning_preferences;
-    const newPrefs = currentPrefs.includes(pref)
-      ? currentPrefs.filter(p => p !== pref)
-      : [...currentPrefs, pref];
-    setFormData({ ...formData, learning_preferences: newPrefs });
+    setFormData(prev => ({
+      ...prev,
+      learning_preferences: prev.learning_preferences.includes(pref)
+        ? prev.learning_preferences.filter(p => p !== pref)
+        : [...prev.learning_preferences, pref]
+    }));
   };
 
   const toggleInterest = (interest) => {
-    const currentInterests = formData.interests;
-    const newInterests = currentInterests.includes(interest)
-      ? currentInterests.filter(i => i !== interest)
-      : [...currentInterests, interest];
-    setFormData({ ...formData, interests: newInterests });
+    setFormData(prev => ({
+      ...prev,
+      interests: prev.interests.includes(interest)
+        ? prev.interests.filter(i => i !== interest)
+        : [...prev.interests, interest]
+    }));
   };
 
   return (
