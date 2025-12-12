@@ -114,13 +114,21 @@ export default function BasicInfoForm({ data, onComplete, onBack }) {
             <Label className="mb-3 block">Learning Preferences (Select all that apply)</Label>
             <div className="grid grid-cols-2 gap-3">
               {['Visual', 'Reading', 'Hands-on', 'Mixed'].map(pref => (
-                <div key={pref} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
+                <div 
+                  key={pref} 
+                  className={`flex items-center space-x-2 p-3 border-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-all ${
+                    formData.learning_preferences.includes(pref) 
+                      ? 'border-blue-500 bg-blue-50' 
+                      : 'border-gray-200'
+                  }`}
+                  onClick={() => togglePreference(pref)}
+                >
                   <Checkbox
                     id={`pref-${pref}`}
                     checked={formData.learning_preferences.includes(pref)}
                     onCheckedChange={() => togglePreference(pref)}
                   />
-                  <label htmlFor={`pref-${pref}`} className="text-sm cursor-pointer flex-1" onClick={() => togglePreference(pref)}>{pref}</label>
+                  <label htmlFor={`pref-${pref}`} className="text-sm flex-1 cursor-pointer">{pref}</label>
                 </div>
               ))}
             </div>
@@ -130,13 +138,21 @@ export default function BasicInfoForm({ data, onComplete, onBack }) {
             <Label className="mb-3 block">Interests (Select all that apply)</Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {['Sports', 'Art', 'Music', 'Building', 'Technology', 'Writing', 'Science', 'Reading'].map(interest => (
-                <div key={interest} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
+                <div 
+                  key={interest} 
+                  className={`flex items-center space-x-2 p-3 border-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-all ${
+                    formData.interests.includes(interest) 
+                      ? 'border-blue-500 bg-blue-50' 
+                      : 'border-gray-200'
+                  }`}
+                  onClick={() => toggleInterest(interest)}
+                >
                   <Checkbox
                     id={`interest-${interest}`}
                     checked={formData.interests.includes(interest)}
                     onCheckedChange={() => toggleInterest(interest)}
                   />
-                  <label htmlFor={`interest-${interest}`} className="text-sm cursor-pointer flex-1" onClick={() => toggleInterest(interest)}>{interest}</label>
+                  <label htmlFor={`interest-${interest}`} className="text-sm flex-1 cursor-pointer">{interest}</label>
                 </div>
               ))}
             </div>
