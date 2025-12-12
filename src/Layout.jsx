@@ -117,6 +117,17 @@ export default function Layout({ children, currentPageName }) {
                   <Brain className="w-4 h-4" />
                   <span className="hidden md:inline">AI Tutor</span>
                 </Link>
+                <Link
+                  to={createPageUrl('ClubDirectory')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                    currentPageName === 'ClubDirectory' || currentPageName === 'ClubDetail' || currentPageName === 'ClubManagement'
+                      ? 'bg-purple-100 text-purple-700 font-semibold'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <Users className="w-4 h-4" />
+                  <span className="hidden md:inline">Clubs</span>
+                </Link>
                 {user.role === 'admin' && (
                   <>
                     <Link

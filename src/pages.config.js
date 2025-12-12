@@ -17,6 +17,9 @@ import StudentOnboarding from './pages/StudentOnboarding';
 import GetStarted from './pages/GetStarted';
 import HomePage from './pages/HomePage';
 import OwnerControlPanel from './pages/OwnerControlPanel';
+import ClubDirectory from './pages/ClubDirectory';
+import ClubDetail from './pages/ClubDetail';
+import ClubManagement from './pages/ClubManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -40,6 +43,9 @@ export const PAGES = {
     "GetStarted": GetStarted,
     "HomePage": HomePage,
     "OwnerControlPanel": OwnerControlPanel,
+    "ClubDirectory": ClubDirectory,
+    "ClubDetail": ClubDetail,
+    "ClubManagement": ClubManagement,
 }
 
 export const pagesConfig = {
