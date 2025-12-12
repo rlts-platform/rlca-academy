@@ -34,17 +34,21 @@ export default function BasicInfoForm({ data, onComplete, onBack }) {
   };
 
   const togglePreference = (pref) => {
-    const prefs = formData.learning_preferences.includes(pref)
-      ? formData.learning_preferences.filter(p => p !== pref)
-      : [...formData.learning_preferences, pref];
-    setFormData({ ...formData, learning_preferences: prefs });
+    setFormData(prev => {
+      const prefs = prev.learning_preferences.includes(pref)
+        ? prev.learning_preferences.filter(p => p !== pref)
+        : [...prev.learning_preferences, pref];
+      return { ...prev, learning_preferences: prefs };
+    });
   };
 
   const toggleInterest = (interest) => {
-    const interests = formData.interests.includes(interest)
-      ? formData.interests.filter(i => i !== interest)
-      : [...formData.interests, interest];
-    setFormData({ ...formData, interests });
+    setFormData(prev => {
+      const interests = prev.interests.includes(interest)
+        ? prev.interests.filter(i => i !== interest)
+        : [...prev.interests, interest];
+      return { ...prev, interests };
+    });
   };
 
   return (
@@ -110,13 +114,13 @@ export default function BasicInfoForm({ data, onComplete, onBack }) {
             <Label className="mb-3 block">Learning Preferences (Select all that apply)</Label>
             <div className="grid grid-cols-2 gap-3">
               {['Visual', 'Reading', 'Hands-on', 'Mixed'].map(pref => (
-                <div key={pref} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer" onClick={() => togglePreference(pref)}>
+                <div key={pref} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
                   <Checkbox
                     id={`pref-${pref}`}
                     checked={formData.learning_preferences.includes(pref)}
                     onCheckedChange={() => togglePreference(pref)}
                   />
-                  <label htmlFor={`pref-${pref}`} className="text-sm cursor-pointer flex-1">{pref}</label>
+                  <label htmlFor={`pref-${pref}`} className="text-sm cursor-pointer flex-1" onClick={() => togglePreference(pref)}>{pref}</label>
                 </div>
               ))}
             </div>
@@ -126,13 +130,13 @@ export default function BasicInfoForm({ data, onComplete, onBack }) {
             <Label className="mb-3 block">Interests (Select all that apply)</Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {['Sports', 'Art', 'Music', 'Building', 'Technology', 'Writing', 'Science', 'Reading'].map(interest => (
-                <div key={interest} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer" onClick={() => toggleInterest(interest)}>
+                <div key={interest} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
                   <Checkbox
                     id={`interest-${interest}`}
                     checked={formData.interests.includes(interest)}
                     onCheckedChange={() => toggleInterest(interest)}
                   />
-                  <label htmlFor={`interest-${interest}`} className="text-sm cursor-pointer flex-1">{interest}</label>
+                  <label htmlFor={`interest-${interest}`} className="text-sm cursor-pointer flex-1" onClick={() => toggleInterest(interest)}>{interest}</label>
                 </div>
               ))}
             </div>
