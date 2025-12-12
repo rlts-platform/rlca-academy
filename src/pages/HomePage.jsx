@@ -195,38 +195,21 @@ export default function HomePage() {
                 </TabsContent>
 
                 <TabsContent value="signin">
-                  <form onSubmit={handleSignIn} className="space-y-4">
-                    <div>
-                      <Label>Email Address</Label>
-                      <Input
-                        type="email"
-                        value={signInData.email}
-                        onChange={(e) => setSignInData({...signInData, email: e.target.value})}
-                        placeholder="parent@example.com"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label>Password</Label>
-                      <Input
-                        type="password"
-                        value={signInData.password}
-                        onChange={(e) => setSignInData({...signInData, password: e.target.value})}
-                        placeholder="Enter your password"
-                        required
-                      />
-                    </div>
+                  <div className="space-y-4 py-8 text-center">
+                    <p className="text-gray-600 mb-6">
+                      Already have an account? Sign in to access your dashboard and continue your learning journey.
+                    </p>
                     <Button
-                      type="submit"
+                      onClick={() => base44.auth.redirectToLogin()}
                       className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                       size="lg"
                     >
                       Sign In to Dashboard
                     </Button>
-                    <p className="text-xs text-center text-gray-500">
+                    <p className="text-xs text-gray-500 mt-4">
                       Forgot your password? Contact support
                     </p>
-                  </form>
+                  </div>
                 </TabsContent>
               </Tabs>
             </CardContent>
