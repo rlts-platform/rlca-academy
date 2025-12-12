@@ -118,19 +118,17 @@ export default function BasicInfoForm({ data, onComplete, onBack }) {
                 return (
                   <div 
                     key={pref}
-                    className={`flex items-center space-x-2 p-3 border-2 rounded-lg hover:bg-gray-50 transition-all cursor-pointer ${
+                    className={`flex items-center space-x-2 p-3 border-2 rounded-lg hover:bg-gray-50 transition-all ${
                       isSelected
                         ? 'border-blue-500 bg-blue-50' 
                         : 'border-gray-200'
                     }`}
-                    onClick={() => togglePreference(pref)}
                   >
                     <Checkbox
                       checked={isSelected}
-                      onCheckedChange={() => {}}
-                      className="pointer-events-none"
+                      onCheckedChange={() => togglePreference(pref)}
                     />
-                    <span className="text-sm flex-1">{pref}</span>
+                    <Label className="text-sm flex-1 cursor-pointer" onClick={() => togglePreference(pref)}>{pref}</Label>
                   </div>
                 );
               })}
@@ -145,19 +143,17 @@ export default function BasicInfoForm({ data, onComplete, onBack }) {
                 return (
                   <div 
                     key={interest}
-                    className={`flex items-center space-x-2 p-3 border-2 rounded-lg hover:bg-gray-50 transition-all cursor-pointer ${
+                    className={`flex items-center space-x-2 p-3 border-2 rounded-lg hover:bg-gray-50 transition-all ${
                       isSelected
                         ? 'border-blue-500 bg-blue-50' 
                         : 'border-gray-200'
                     }`}
-                    onClick={() => toggleInterest(interest)}
                   >
                     <Checkbox
                       checked={isSelected}
-                      onCheckedChange={() => {}}
-                      className="pointer-events-none"
+                      onCheckedChange={() => toggleInterest(interest)}
                     />
-                    <span className="text-sm flex-1">{interest}</span>
+                    <Label className="text-sm flex-1 cursor-pointer" onClick={() => toggleInterest(interest)}>{interest}</Label>
                   </div>
                 );
               })}
