@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Users, BookOpen, Calendar, GraduationCap, Plus, Edit, Trash2, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import StatsCard from '../components/dashboard/StatsCard';
+import { notifyNewGrade, notifyAttendanceUpdate } from '../components/notifications/NotificationHelpers';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -49,17 +50,19 @@ export default function AdminDashboard() {
 
   const markAttendanceMutation = useMutation({
     mutationFn: (data) => base44.entities.Attendance.create(data),
-    onSuccess: () => {
+    onSuccess: async (newAttendance) => {
       queryClient.invalidateQueries({ queryKey: ['all-attendance'] });
       setShowAttendanceForm(false);
+      await notifyAttendanceUpdate(newAttendance);
     }
   });
 
   const addGradeMutation = useMutation({
     mutationFn: (data) => base44.entities.Grade.create(data),
-    onSuccess: () => {
+    onSuccess: async (newGrade) => {
       queryClient.invalidateQueries({ queryKey: ['all-grades'] });
       setShowGradeForm(false);
+      await notifyNewGrade(newGrade);
     }
   });
 
