@@ -34,21 +34,21 @@ export default function BasicInfoForm({ data, onComplete, onBack }) {
   };
 
   const togglePreference = (pref) => {
-    setFormData(prev => ({
-      ...prev,
-      learning_preferences: prev.learning_preferences.includes(pref)
-        ? prev.learning_preferences.filter(p => p !== pref)
-        : [...prev.learning_preferences, pref]
-    }));
+    const currentPrefs = formData.learning_preferences || [];
+    const newPrefs = currentPrefs.includes(pref)
+      ? currentPrefs.filter(p => p !== pref)
+      : [...currentPrefs, pref];
+    
+    setFormData({ ...formData, learning_preferences: newPrefs });
   };
 
   const toggleInterest = (interest) => {
-    setFormData(prev => ({
-      ...prev,
-      interests: prev.interests.includes(interest)
-        ? prev.interests.filter(i => i !== interest)
-        : [...prev.interests, interest]
-    }));
+    const currentInterests = formData.interests || [];
+    const newInterests = currentInterests.includes(interest)
+      ? currentInterests.filter(i => i !== interest)
+      : [...currentInterests, interest];
+    
+    setFormData({ ...formData, interests: newInterests });
   };
 
   return (
@@ -116,10 +116,9 @@ export default function BasicInfoForm({ data, onComplete, onBack }) {
               {['Visual', 'Reading', 'Hands-on', 'Mixed'].map(pref => {
                 const isSelected = formData.learning_preferences.includes(pref);
                 return (
-                  <button 
+                  <div 
                     key={pref}
-                    type="button"
-                    className={`flex items-center space-x-2 p-3 border-2 rounded-lg hover:bg-gray-50 transition-all text-left ${
+                    className={`flex items-center space-x-2 p-3 border-2 rounded-lg hover:bg-gray-50 transition-all cursor-pointer ${
                       isSelected
                         ? 'border-blue-500 bg-blue-50' 
                         : 'border-gray-200'
@@ -128,11 +127,11 @@ export default function BasicInfoForm({ data, onComplete, onBack }) {
                   >
                     <Checkbox
                       checked={isSelected}
-                      readOnly
+                      onCheckedChange={() => {}}
                       className="pointer-events-none"
                     />
                     <span className="text-sm flex-1">{pref}</span>
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -144,10 +143,9 @@ export default function BasicInfoForm({ data, onComplete, onBack }) {
               {['Sports', 'Art', 'Music', 'Building', 'Technology', 'Writing', 'Science', 'Reading'].map(interest => {
                 const isSelected = formData.interests.includes(interest);
                 return (
-                  <button 
+                  <div 
                     key={interest}
-                    type="button"
-                    className={`flex items-center space-x-2 p-3 border-2 rounded-lg hover:bg-gray-50 transition-all text-left ${
+                    className={`flex items-center space-x-2 p-3 border-2 rounded-lg hover:bg-gray-50 transition-all cursor-pointer ${
                       isSelected
                         ? 'border-blue-500 bg-blue-50' 
                         : 'border-gray-200'
@@ -156,11 +154,11 @@ export default function BasicInfoForm({ data, onComplete, onBack }) {
                   >
                     <Checkbox
                       checked={isSelected}
-                      readOnly
+                      onCheckedChange={() => {}}
                       className="pointer-events-none"
                     />
                     <span className="text-sm flex-1">{interest}</span>
-                  </button>
+                  </div>
                 );
               })}
             </div>
