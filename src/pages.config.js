@@ -6,6 +6,8 @@ import LearningPlanView from './pages/LearningPlanView';
 import GamificationDashboard from './pages/GamificationDashboard';
 import CurriculumDashboard from './pages/CurriculumDashboard';
 import QuizView from './pages/QuizView';
+import StudentAssignments from './pages/StudentAssignments';
+import AssignmentSubmission from './pages/AssignmentSubmission';
 import __Layout from './Layout.jsx';
 
 
@@ -18,6 +20,8 @@ export const PAGES = {
     "GamificationDashboard": GamificationDashboard,
     "CurriculumDashboard": CurriculumDashboard,
     "QuizView": QuizView,
+    "StudentAssignments": StudentAssignments,
+    "AssignmentSubmission": AssignmentSubmission,
 }
 
 export const pagesConfig = {
