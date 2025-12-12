@@ -20,6 +20,7 @@ import OwnerControlPanel from './pages/OwnerControlPanel';
 import ClubDirectory from './pages/ClubDirectory';
 import ClubDetail from './pages/ClubDetail';
 import ClubManagement from './pages/ClubManagement';
+import ClubEventDetail from './pages/ClubEventDetail';
 import __Layout from './Layout.jsx';
 
 
@@ -46,6 +47,7 @@ export const PAGES = {
     "ClubDirectory": ClubDirectory,
     "ClubDetail": ClubDetail,
     "ClubManagement": ClubManagement,
+    "ClubEventDetail": ClubEventDetail,
 }
 
 export const pagesConfig = {

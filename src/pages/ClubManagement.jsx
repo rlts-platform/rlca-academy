@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Megaphone, Trophy, ArrowLeft } from 'lucide-react';
+import { Megaphone, Trophy, ArrowLeft, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -25,6 +25,20 @@ export default function ClubManagement() {
     post_type: 'Update',
     event_date: '',
     pinned: false
+  });
+
+  const [eventForm, setEventForm] = useState({
+    title: '',
+    description: '',
+    event_type: 'Meeting',
+    start_datetime: '',
+    end_datetime: '',
+    location: '',
+    virtual_link: '',
+    max_attendees: 30,
+    rsvp_required: true,
+    rsvp_deadline: '',
+    notes: ''
   });
 
   useEffect(() => {
@@ -60,6 +74,26 @@ export default function ClubManagement() {
     }
   });
 
+  const createEventMutation = useMutation({
+    mutationFn: (data) => base44.entities.ClubEvent.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['club-events'] });
+      setEventForm({
+        title: '',
+        description: '',
+        event_type: 'Meeting',
+        start_datetime: '',
+        end_datetime: '',
+        location: '',
+        virtual_link: '',
+        max_attendees: 30,
+        rsvp_required: true,
+        rsvp_deadline: '',
+        notes: ''
+      });
+    }
+  });
+
   const handlePostSubmit = (e) => {
     e.preventDefault();
     createPostMutation.mutate({
@@ -68,6 +102,18 @@ export default function ClubManagement() {
       author_name: currentUser.full_name,
       author_email: currentUser.email,
       ...postForm
+    });
+  };
+
+  const handleEventSubmit = (e) => {
+    e.preventDefault();
+    createEventMutation.mutate({
+      club_id: clubId,
+      club_name: club.name,
+      organizer_name: currentUser.full_name,
+      organizer_email: currentUser.email,
+      status: 'Upcoming',
+      ...eventForm
     });
   };
 
@@ -114,8 +160,12 @@ export default function ClubManagement() {
           <p className="text-gray-600">Post updates, announcements, and approve achievements</p>
         </motion.div>
 
-        <Tabs defaultValue="post">
+        <Tabs defaultValue="event">
           <TabsList>
+            <TabsTrigger value="event">
+              <Calendar className="w-4 h-4 mr-2" />
+              Create Event
+            </TabsTrigger>
             <TabsTrigger value="post">
               <Megaphone className="w-4 h-4 mr-2" />
               Create Post
@@ -125,6 +175,137 @@ export default function ClubManagement() {
               Review Achievements
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="event">
+            <Card className="shadow-xl">
+              <CardHeader>
+                <CardTitle>Create New Event</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleEventSubmit} className="space-y-4">
+                  <div>
+                    <Label>Event Type</Label>
+                    <Select value={eventForm.event_type} onValueChange={(v) => setEventForm({ ...eventForm, event_type: v })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Meeting">Meeting</SelectItem>
+                        <SelectItem value="Practice">Practice</SelectItem>
+                        <SelectItem value="Performance">Performance</SelectItem>
+                        <SelectItem value="Competition">Competition</SelectItem>
+                        <SelectItem value="Workshop">Workshop</SelectItem>
+                        <SelectItem value="Social">Social</SelectItem>
+                        <SelectItem value="Service">Service</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label>Event Title</Label>
+                    <Input
+                      value={eventForm.title}
+                      onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+                      placeholder="Event title"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Description</Label>
+                    <Textarea
+                      value={eventForm.description}
+                      onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+                      placeholder="Event description"
+                      rows={4}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Start Date & Time</Label>
+                      <Input
+                        type="datetime-local"
+                        value={eventForm.start_datetime}
+                        onChange={(e) => setEventForm({ ...eventForm, start_datetime: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label>End Date & Time</Label>
+                      <Input
+                        type="datetime-local"
+                        value={eventForm.end_datetime}
+                        onChange={(e) => setEventForm({ ...eventForm, end_datetime: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Location</Label>
+                    <Input
+                      value={eventForm.location}
+                      onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
+                      placeholder="Event location"
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Virtual Meeting Link (Optional)</Label>
+                    <Input
+                      value={eventForm.virtual_link}
+                      onChange={(e) => setEventForm({ ...eventForm, virtual_link: e.target.value })}
+                      placeholder="https://meet.google.com/..."
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Max Attendees</Label>
+                      <Input
+                        type="number"
+                        value={eventForm.max_attendees}
+                        onChange={(e) => setEventForm({ ...eventForm, max_attendees: parseInt(e.target.value) })}
+                      />
+                    </div>
+                    <div>
+                      <Label>RSVP Deadline</Label>
+                      <Input
+                        type="datetime-local"
+                        value={eventForm.rsvp_deadline}
+                        onChange={(e) => setEventForm({ ...eventForm, rsvp_deadline: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Additional Notes</Label>
+                    <Textarea
+                      value={eventForm.notes}
+                      onChange={(e) => setEventForm({ ...eventForm, notes: e.target.value })}
+                      placeholder="Any additional information..."
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="rsvp_required"
+                      checked={eventForm.rsvp_required}
+                      onCheckedChange={(checked) => setEventForm({ ...eventForm, rsvp_required: checked })}
+                    />
+                    <label htmlFor="rsvp_required" className="text-sm">RSVP Required</label>
+                  </div>
+
+                  <Button type="submit" disabled={createEventMutation.isPending} className="w-full bg-gradient-to-r from-purple-600 to-blue-600">
+                    {createEventMutation.isPending ? 'Creating Event...' : 'Create Event'}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="post">
             <Card className="shadow-xl">

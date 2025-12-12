@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import EventCalendar from '../components/club/EventCalendar';
 
 export default function ClubDetail() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -61,6 +62,12 @@ export default function ClubDetail() {
   const { data: achievements = [] } = useQuery({
     queryKey: ['club-achievements', clubId],
     queryFn: () => base44.entities.ClubAchievement.filter({ club_id: clubId }, '-achievement_date'),
+    enabled: !!clubId
+  });
+
+  const { data: events = [] } = useQuery({
+    queryKey: ['club-events', clubId],
+    queryFn: () => base44.entities.ClubEvent.filter({ club_id: clubId }, 'start_datetime'),
     enabled: !!clubId
   });
 
@@ -163,8 +170,12 @@ export default function ClubDetail() {
           </Card>
         </motion.div>
 
-        <Tabs defaultValue="posts">
+        <Tabs defaultValue="events">
           <TabsList>
+            <TabsTrigger value="events">
+              <Calendar className="w-4 h-4 mr-2" />
+              Events ({events.length})
+            </TabsTrigger>
             <TabsTrigger value="posts">
               <Megaphone className="w-4 h-4 mr-2" />
               Posts & Announcements
@@ -178,6 +189,10 @@ export default function ClubDetail() {
               Achievements
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="events">
+            <EventCalendar events={events} />
+          </TabsContent>
 
           <TabsContent value="posts">
             <ScrollArea className="h-[600px]">
