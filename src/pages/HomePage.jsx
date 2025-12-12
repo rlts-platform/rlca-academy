@@ -9,22 +9,6 @@ import { motion } from "framer-motion";
 import { base44 } from '@/api/base44Client';
 
 export default function HomePage() {
-  const [signUpData, setSignUpData] = useState({ fullName: '', email: '', password: '' });
-  const [signInData, setSignInData] = useState({ email: '', password: '' });
-  const [loading, setLoading] = useState(false);
-
-  const handleSignUp = (e) => {
-    e.preventDefault();
-    setLoading(true);
-    // Redirect to actual sign up process
-    alert('Account creation will be handled through the platform. Redirecting to onboarding...');
-    window.location.href = '/StudentOnboarding';
-  };
-
-  const handleSignIn = (e) => {
-    e.preventDefault();
-    base44.auth.redirectToLogin();
-  };
 
   const features = [
     {
@@ -152,7 +136,7 @@ export default function HomePage() {
                   Start with our student placement questionnaire to find the perfect grade level and learning path.
                 </p>
                 <Button
-                  onClick={() => window.location.href = '/StudentOnboarding'}
+                  onClick={() => base44.auth.redirectToLogin(window.location.origin + '/StudentOnboarding')}
                   className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                   size="lg"
                 >
@@ -337,7 +321,7 @@ export default function HomePage() {
               Join families who are raising the next generation of excellent leaders
             </p>
             <Button
-              onClick={() => document.querySelector('[value="signup"]').click()}
+              onClick={() => base44.auth.redirectToLogin(window.location.origin + '/StudentOnboarding')}
               size="lg"
               className="bg-white text-purple-600 hover:bg-gray-100 text-lg px-8 py-6 shadow-xl"
             >
