@@ -9,7 +9,7 @@ import { Users, BookOpen, Search, Filter, UserPlus } from 'lucide-react';
 import EnrollmentForm from '../components/enrollment/EnrollmentForm';
 import EnrolledStudentsList from '../components/enrollment/EnrolledStudentsList';
 import StatsCard from '../components/dashboard/StatsCard';
-import { notifyNewEnrollment, notifyEnrollmentStatusChange } from '../utils/notificationHelpers';
+import { notifyNewEnrollment, notifyEnrollmentStatusChange } from '../components/notifications/NotificationHelpers';
 
 export default function EnrollmentManagement() {
   const [user, setUser] = useState(null);
