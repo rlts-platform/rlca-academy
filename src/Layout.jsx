@@ -36,9 +36,9 @@ export default function Layout({ children, currentPageName }) {
               </div>
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                  Royal Kids Academy
+                  Royal Legends Children Academy
                 </h1>
-                <p className="text-xs text-gray-600">Excellence in Education</p>
+                <p className="text-xs text-gray-600">Raising Excellent Leaders</p>
               </div>
             </Link>
 
@@ -87,6 +87,17 @@ export default function Layout({ children, currentPageName }) {
                 >
                   <Gamepad2 className="w-4 h-4" />
                   <span className="hidden md:inline">Rewards</span>
+                </Link>
+                <Link
+                  to={createPageUrl('AITutor')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                    currentPageName === 'AITutor'
+                      ? 'bg-purple-100 text-purple-700 font-semibold'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <Brain className="w-4 h-4" />
+                  <span className="hidden md:inline">AI Tutor</span>
                 </Link>
                 {user.role === 'admin' && (
                   <Link

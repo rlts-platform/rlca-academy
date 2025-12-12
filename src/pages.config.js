@@ -11,6 +11,8 @@ import AssignmentSubmission from './pages/AssignmentSubmission';
 import LessonViewer from './pages/LessonViewer';
 import ParentCommunication from './pages/ParentCommunication';
 import TeacherGrading from './pages/TeacherGrading';
+import AITutor from './pages/AITutor';
+import ReportCards from './pages/ReportCards';
 import __Layout from './Layout.jsx';
 
 
@@ -28,6 +30,8 @@ export const PAGES = {
     "LessonViewer": LessonViewer,
     "ParentCommunication": ParentCommunication,
     "TeacherGrading": TeacherGrading,
+    "AITutor": AITutor,
+    "ReportCards": ReportCards,
 }
 
 export const pagesConfig = {
