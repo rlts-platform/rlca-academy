@@ -31,9 +31,14 @@ export default function StudentOnboarding() {
   }, []);
 
   const loadUser = async () => {
-    const user = await base44.auth.me();
-    setCurrentUser(user);
-    setOnboardingData(prev => ({ ...prev, parent_email: user.email }));
+    try {
+      const user = await base44.auth.me();
+      setCurrentUser(user);
+      setOnboardingData(prev => ({ ...prev, parent_email: user.email }));
+    } catch (error) {
+      // User not logged in, redirect to get started page
+      window.location.href = '/GetStarted';
+    }
   };
 
   const calculateAge = (dob) => {
@@ -59,11 +64,24 @@ export default function StudentOnboarding() {
 
   const saveOnboardingMutation = useMutation({
     mutationFn: async (data) => {
-      return await base44.entities.StudentOnboarding.create(data);
+      const onboardingRecord = await base44.entities.StudentOnboarding.create(data);
+      
+      // Also create the actual Student entity
+      await base44.entities.Student.create({
+        full_name: `${data.legal_first_name} ${data.legal_last_name}`,
+        age: data.age,
+        grade_level: data.recommended_grade || data.age_estimate_grade,
+        parent_email: data.parent_email,
+        student_email: '',
+        enrollment_status: 'Active',
+        date_of_birth: data.date_of_birth
+      });
+      
+      return onboardingRecord;
     },
     onSuccess: (result) => {
-      alert('Onboarding completed! Your student profile has been created.');
-      window.location.href = '/';
+      alert('Onboarding completed! Your student profile has been created. Welcome to Royal Legends Children Academy!');
+      window.location.href = '/StudentDashboard';
     }
   });
 

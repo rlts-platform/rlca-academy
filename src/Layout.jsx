@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { GraduationCap, Home, Users, UserCircle, LogOut, Brain, Gamepad2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { Button } from '@/components/ui/button';
 
 export default function Layout({ children, currentPageName }) {
   const [user, setUser] = React.useState(null);
@@ -42,7 +43,22 @@ export default function Layout({ children, currentPageName }) {
               </div>
             </Link>
 
-            {user && (
+            {!user ? (
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => base44.auth.redirectToLogin()}
+                >
+                  Sign In
+                </Button>
+                <Button
+                  onClick={() => window.location.href = '/GetStarted'}
+                  className="bg-gradient-to-r from-purple-600 to-blue-600"
+                >
+                  Get Started
+                </Button>
+              </div>
+            ) : (
               <nav className="flex items-center gap-6">
                 <Link
                   to={createPageUrl('StudentDashboard')}
