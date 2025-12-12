@@ -51,6 +51,12 @@ export default function ParentDashboard() {
     enabled: !!selectedStudent
   });
 
+  const { data: selectedEnrollments = [] } = useQuery({
+    queryKey: ['student-enrollments', selectedStudent?.id],
+    queryFn: () => selectedStudent ? base44.entities.Enrollment.filter({ student_id: selectedStudent.id }, '-enrollment_date', 50) : [],
+    enabled: !!selectedStudent
+  });
+
   useEffect(() => {
     if (students && students.length > 0 && !selectedStudent) {
       setSelectedStudent(students[0]);
@@ -183,9 +189,29 @@ export default function ParentDashboard() {
               </div>
 
               {/* Grades and Attendance */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 <GradesList grades={selectedGrades} title={`${selectedStudent.full_name}'s Recent Grades`} />
                 <AttendanceCalendar attendance={selectedAttendance} title={`${selectedStudent.full_name}'s Attendance`} />
+              </div>
+
+              {/* Enrolled Courses */}
+              <div>
+                <div className="flex items-center gap-2 mb-6">
+                  <BookOpen className="w-6 h-6 text-purple-600" />
+                  <h2 className="text-2xl font-bold text-gray-900">Enrolled Courses</h2>
+                </div>
+                {selectedEnrollments.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {selectedEnrollments.map((enrollment) => (
+                      <CourseEnrollmentCard key={enrollment.id} enrollment={enrollment} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 bg-white rounded-xl shadow-sm">
+                    <BookOpen className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                    <p className="text-gray-500">No course enrollments found</p>
+                  </div>
+                )}
               </div>
             </motion.div>
           </AnimatePresence>
