@@ -22,8 +22,12 @@ export default function BasicInfoForm({ data, onComplete, onBack }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.legal_first_name || !formData.legal_last_name || !formData.date_of_birth || !formData.parent_full_name || !formData.parent_email) {
-      alert('Please fill in all required fields (including parent information)');
+    if (!formData.legal_first_name || !formData.legal_last_name || !formData.date_of_birth) {
+      alert('Please fill in all required student information');
+      return;
+    }
+    if (!formData.parent_full_name || !formData.parent_email) {
+      alert('Please fill in parent/guardian information');
       return;
     }
     onComplete(formData);

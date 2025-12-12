@@ -72,20 +72,18 @@ export default function StudentOnboarding() {
         await base44.entities.Parent.create({
           full_name: data.parent_full_name,
           email: data.parent_email,
-          phone: data.parent_phone || '',
-          student_ids: []
+          phone: data.parent_phone || ''
         });
       }
       
       // Create the actual Student entity
-      const student = await base44.entities.Student.create({
+      await base44.entities.Student.create({
         full_name: `${data.legal_first_name} ${data.legal_last_name}`,
         age: data.age,
         grade_level: data.recommended_grade || data.age_estimate_grade,
         parent_email: data.parent_email,
         student_email: '',
-        enrollment_status: 'Active',
-        date_of_birth: data.date_of_birth
+        enrollment_status: 'Active'
       });
       
       return onboardingRecord;
