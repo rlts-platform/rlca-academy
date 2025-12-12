@@ -121,12 +121,15 @@ export default function BasicInfoForm({ data, onComplete, onBack }) {
                       ? 'border-blue-500 bg-blue-50' 
                       : 'border-gray-200'
                   }`}
-                  onClick={() => togglePreference(pref)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    togglePreference(pref);
+                  }}
                 >
                   <Checkbox
                     id={`pref-${pref}`}
                     checked={formData.learning_preferences.includes(pref)}
-                    onCheckedChange={() => togglePreference(pref)}
+                    readOnly
                   />
                   <label htmlFor={`pref-${pref}`} className="text-sm flex-1 cursor-pointer">{pref}</label>
                 </div>
@@ -145,12 +148,15 @@ export default function BasicInfoForm({ data, onComplete, onBack }) {
                       ? 'border-blue-500 bg-blue-50' 
                       : 'border-gray-200'
                   }`}
-                  onClick={() => toggleInterest(interest)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggleInterest(interest);
+                  }}
                 >
                   <Checkbox
                     id={`interest-${interest}`}
                     checked={formData.interests.includes(interest)}
-                    onCheckedChange={() => toggleInterest(interest)}
+                    readOnly
                   />
                   <label htmlFor={`interest-${interest}`} className="text-sm flex-1 cursor-pointer">{interest}</label>
                 </div>
