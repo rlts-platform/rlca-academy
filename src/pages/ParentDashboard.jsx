@@ -10,7 +10,6 @@ import GradesList from '../components/dashboard/GradesList';
 import AttendanceCalendar from '../components/dashboard/AttendanceCalendar';
 import StatsCard from '../components/dashboard/StatsCard';
 import CourseEnrollmentCard from '../components/enrollment/CourseEnrollmentCard';
-import { BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ParentDashboard() {
