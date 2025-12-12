@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { GraduationCap, Home, Users, UserCircle, LogOut, Brain, Gamepad2, Activity } from 'lucide-react';
+import { GraduationCap, Home, Users, UserCircle, LogOut, Brain, Gamepad2, Activity, Settings } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import ActivityMonitor from '@/components/monitoring/ActivityMonitor';
@@ -167,6 +167,17 @@ export default function Layout({ children, currentPageName }) {
                     )}
                   </>
                 )}
+                <Link
+                  to={createPageUrl('NotificationSettings')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                    currentPageName === 'NotificationSettings'
+                      ? 'bg-purple-100 text-purple-700 font-semibold'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <Settings className="w-4 h-4" />
+                  <span className="hidden md:inline">Settings</span>
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-600 hover:bg-red-50 hover:text-red-600 transition-all"

@@ -22,6 +22,7 @@ import ClubDetail from './pages/ClubDetail';
 import ClubManagement from './pages/ClubManagement';
 import ClubEventDetail from './pages/ClubEventDetail';
 import EnrollmentManagement from './pages/EnrollmentManagement';
+import NotificationSettings from './pages/NotificationSettings';
 import __Layout from './Layout.jsx';
 
 
@@ -50,6 +51,7 @@ export const PAGES = {
     "ClubManagement": ClubManagement,
     "ClubEventDetail": ClubEventDetail,
     "EnrollmentManagement": EnrollmentManagement,
+    "NotificationSettings": NotificationSettings,
 }
 
 export const pagesConfig = {

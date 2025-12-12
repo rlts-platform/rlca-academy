@@ -9,6 +9,7 @@ import { Users, BookOpen, Search, Filter, UserPlus } from 'lucide-react';
 import EnrollmentForm from '../components/enrollment/EnrollmentForm';
 import EnrolledStudentsList from '../components/enrollment/EnrolledStudentsList';
 import StatsCard from '../components/dashboard/StatsCard';
+import { notifyNewEnrollment, notifyEnrollmentStatusChange } from '../utils/notificationHelpers';
 
 export default function EnrollmentManagement() {
   const [user, setUser] = useState(null);
@@ -67,16 +68,29 @@ export default function EnrollmentManagement() {
 
   const enrollMutation = useMutation({
     mutationFn: (enrollmentData) => base44.entities.Enrollment.create(enrollmentData),
-    onSuccess: () => {
+    onSuccess: async (newEnrollment) => {
       queryClient.invalidateQueries({ queryKey: ['enrollments'] });
       setShowEnrollForm(false);
+      
+      // Notify all admins about new enrollment
+      const allUsers = await base44.entities.User.list();
+      const adminEmails = allUsers.filter(u => u.role === 'admin').map(u => u.email);
+      await notifyNewEnrollment(newEnrollment, adminEmails);
     }
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }) => base44.entities.Enrollment.update(id, { status }),
-    onSuccess: () => {
+    mutationFn: async ({ id, status }) => {
+      const enrollment = enrollments.find(e => e.id === id);
+      const oldStatus = enrollment?.status;
+      const updated = await base44.entities.Enrollment.update(id, { status });
+      return { updated, enrollment, oldStatus };
+    },
+    onSuccess: async ({ updated, enrollment, oldStatus }) => {
       queryClient.invalidateQueries({ queryKey: ['enrollments'] });
+      if (enrollment && oldStatus !== updated.status) {
+        await notifyEnrollmentStatusChange({ ...enrollment, ...updated }, oldStatus);
+      }
     }
   });
 
