@@ -10,6 +10,9 @@ import GradesList from '../components/dashboard/GradesList';
 import AttendanceCalendar from '../components/dashboard/AttendanceCalendar';
 import StatsCard from '../components/dashboard/StatsCard';
 import CourseEnrollmentCard from '../components/enrollment/CourseEnrollmentCard';
+import WeeklyProgressReportGenerator from '../components/communication/WeeklyProgressReportGenerator';
+import AIMessageComposer from '../components/communication/AIMessageComposer';
+import AnnouncementSummarizer from '../components/communication/AnnouncementSummarizer';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ParentDashboard() {
@@ -53,6 +56,23 @@ export default function ParentDashboard() {
   const { data: selectedEnrollments = [] } = useQuery({
     queryKey: ['student-enrollments', selectedStudent?.id],
     queryFn: () => selectedStudent ? base44.entities.Enrollment.filter({ student_id: selectedStudent.id }, '-enrollment_date', 50) : [],
+    enabled: !!selectedStudent
+  });
+
+  const getWeekStartDate = () => {
+    const now = new Date();
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(now.setDate(diff));
+    return monday.toISOString().split('T')[0];
+  };
+
+  const { data: weeklyGoals = [] } = useQuery({
+    queryKey: ['weekly-goals', selectedStudent?.id, getWeekStartDate()],
+    queryFn: () => selectedStudent ? base44.entities.WeeklyGoal.filter({ 
+      student_id: selectedStudent.id,
+      week_start_date: getWeekStartDate()
+    }) : [],
     enabled: !!selectedStudent
   });
 
@@ -191,6 +211,25 @@ export default function ParentDashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 <GradesList grades={selectedGrades} title={`${selectedStudent.full_name}'s Recent Grades`} />
                 <AttendanceCalendar attendance={selectedAttendance} title={`${selectedStudent.full_name}'s Attendance`} />
+              </div>
+
+              {/* AI Communication Module */}
+              <div className="space-y-6 mb-8">
+                <h2 className="text-2xl font-bold text-gray-900">AI Communication Center</h2>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <WeeklyProgressReportGenerator 
+                    student={selectedStudent}
+                    grades={selectedGrades}
+                    attendance={selectedAttendance}
+                    weeklyGoals={weeklyGoals}
+                    enrollments={selectedEnrollments}
+                  />
+                  
+                  <AIMessageComposer student={selectedStudent} />
+                </div>
+
+                <AnnouncementSummarizer studentGradeLevel={selectedStudent.grade_level} />
               </div>
 
               {/* Enrolled Courses */}
