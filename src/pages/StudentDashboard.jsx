@@ -7,6 +7,8 @@ import GradesList from '../components/dashboard/GradesList';
 import AttendanceCalendar from '../components/dashboard/AttendanceCalendar';
 import UpcomingAssignments from '../components/dashboard/UpcomingAssignments';
 import PointsDisplay from '../components/gamification/PointsDisplay';
+import WeeklyGoalsSection from '../components/dashboard/WeeklyGoalsSection';
+import ProgressReportSummary from '../components/dashboard/ProgressReportSummary';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -84,6 +86,29 @@ export default function StudentDashboard() {
       const progressRecords = await base44.entities.StudentProgress.filter({ student_id: studentProfile.id });
       return progressRecords[0] || null;
     },
+    enabled: !!studentProfile
+  });
+
+  const getWeekStartDate = () => {
+    const now = new Date();
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(now.setDate(diff));
+    return monday.toISOString().split('T')[0];
+  };
+
+  const { data: weeklyGoals = [] } = useQuery({
+    queryKey: ['weekly-goals', studentProfile?.id, getWeekStartDate()],
+    queryFn: () => studentProfile ? base44.entities.WeeklyGoal.filter({ 
+      student_id: studentProfile.id,
+      week_start_date: getWeekStartDate()
+    }) : [],
+    enabled: !!studentProfile
+  });
+
+  const { data: enrollments = [] } = useQuery({
+    queryKey: ['student-enrollments', studentProfile?.id],
+    queryFn: () => studentProfile ? base44.entities.Enrollment.filter({ student_id: studentProfile.id }) : [],
     enabled: !!studentProfile
   });
 
@@ -248,6 +273,26 @@ export default function StudentDashboard() {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Progress Report Summary */}
+        <div className="mb-8">
+          <ProgressReportSummary 
+            student={studentProfile}
+            grades={grades}
+            attendance={attendance}
+            enrollments={enrollments}
+          />
+        </div>
+
+        {/* Weekly Goals */}
+        <div className="mb-8">
+          <WeeklyGoalsSection 
+            student={studentProfile}
+            goals={weeklyGoals}
+            grades={grades}
+            attendance={attendance}
+          />
+        </div>
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
