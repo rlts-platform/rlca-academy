@@ -14,6 +14,9 @@ import FocusAreasGrid from '../components/learning/FocusAreasGrid';
 import LessonPathTimeline from '../components/learning/LessonPathTimeline';
 import ResourcesLibrary from '../components/learning/ResourcesLibrary';
 import MilestonesTracker from '../components/learning/MilestonesTracker';
+import SkillTreeVisualization from '../components/learning/SkillTreeVisualization';
+import DynamicResourceSuggester from '../components/learning/DynamicResourceSuggester';
+import PlanEditor from '../components/learning/PlanEditor';
 
 export default function LearningPlanView() {
   const [studentProfile, setStudentProfile] = useState(null);
@@ -55,6 +58,19 @@ export default function LearningPlanView() {
     }
   });
 
+  const updatePlanMutation = useMutation({
+    mutationFn: ({ planId, updates }) => base44.entities.LearningPlan.update(planId, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['learning-plans'] });
+    }
+  });
+
+  const { data: grades = [] } = useQuery({
+    queryKey: ['student-grades-all', studentProfile?.id],
+    queryFn: () => studentProfile ? base44.entities.Grade.filter({ student_id: studentProfile.id }) : [],
+    enabled: !!studentProfile
+  });
+
   const handleToggleMilestone = (index) => {
     if (!activePlan) return;
     const updatedMilestones = [...activePlan.milestones];
@@ -62,6 +78,17 @@ export default function LearningPlanView() {
     updateMilestoneMutation.mutate({
       planId: activePlan.id,
       milestones: updatedMilestones
+    });
+  };
+
+  const handleSavePlan = (updatedPlan) => {
+    updatePlanMutation.mutate({
+      planId: activePlan.id,
+      updates: {
+        parent_goals: updatedPlan.parent_goals,
+        recommended_focus_areas: updatedPlan.recommended_focus_areas,
+        lesson_path: updatedPlan.lesson_path
+      }
     });
   };
 
@@ -160,9 +187,28 @@ export default function LearningPlanView() {
           </motion.div>
         )}
 
+        {/* Plan Editor */}
+        <div className="mb-8">
+          <PlanEditor learningPlan={activePlan} onSave={handleSavePlan} />
+        </div>
+
         {/* AI Analysis */}
         <div className="mb-8">
           <AIAnalysisCard analysis={activePlan.ai_analysis} />
+        </div>
+
+        {/* Skill Tree Visualization */}
+        <div className="mb-8">
+          <SkillTreeVisualization grades={grades} student={studentProfile} />
+        </div>
+
+        {/* Dynamic AI Resource Suggestions */}
+        <div className="mb-8">
+          <DynamicResourceSuggester 
+            learningPlan={activePlan} 
+            grades={grades}
+            milestones={activePlan.milestones}
+          />
         </div>
 
         {/* Focus Areas */}
