@@ -74,7 +74,9 @@ export default function ExtracurricularSelection({ data, onComplete, onBack }) {
                     checked={formData.extracurricular_interests.includes(extra)}
                     onCheckedChange={() => toggleExtra(extra)}
                   />
-                  <label className="text-sm">{extra}</label>
+                  <Label className="text-sm cursor-pointer" onClick={() => toggleExtra(extra)}>
+                    {extra}
+                  </Label>
                 </div>
               ))}
             </div>

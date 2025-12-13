@@ -47,11 +47,11 @@ export default function HomeschoolPreferences({ data, onComplete, onBack }) {
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="yes" id="hs-yes" />
-                <Label htmlFor="hs-yes">Yes</Label>
+                <Label htmlFor="hs-yes" className="cursor-pointer">Yes</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="no" id="hs-no" />
-                <Label htmlFor="hs-no">No</Label>
+                <Label htmlFor="hs-no" className="cursor-pointer">No</Label>
               </div>
             </RadioGroup>
           </div>
@@ -100,7 +100,9 @@ export default function HomeschoolPreferences({ data, onComplete, onBack }) {
                 checked={formData.biblical_studies}
                 onCheckedChange={(checked) => setFormData({ ...formData, biblical_studies: checked })}
               />
-              <Label>Include Biblical Studies as a core subject</Label>
+              <Label className="cursor-pointer" onClick={() => setFormData({ ...formData, biblical_studies: !formData.biblical_studies })}>
+                Include Biblical Studies as a core subject
+              </Label>
             </div>
           </div>
 
@@ -113,7 +115,9 @@ export default function HomeschoolPreferences({ data, onComplete, onBack }) {
                     checked={formData.character_focus.includes(trait)}
                     onCheckedChange={() => toggleCharacterFocus(trait)}
                   />
-                  <label className="text-sm">{trait}</label>
+                  <Label className="text-sm cursor-pointer" onClick={() => toggleCharacterFocus(trait)}>
+                    {trait}
+                  </Label>
                 </div>
               ))}
             </div>
@@ -130,7 +134,12 @@ export default function HomeschoolPreferences({ data, onComplete, onBack }) {
                     technology_access: { ...formData.technology_access, computer_tablet: checked }
                   })}
                 />
-                <label className="text-sm">Computer/tablet available</label>
+                <Label className="text-sm cursor-pointer" onClick={() => setFormData({
+                  ...formData,
+                  technology_access: { ...formData.technology_access, computer_tablet: !formData.technology_access.computer_tablet }
+                })}>
+                  Computer/tablet available
+                </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
@@ -140,7 +149,12 @@ export default function HomeschoolPreferences({ data, onComplete, onBack }) {
                     technology_access: { ...formData.technology_access, internet_reliable: checked }
                   })}
                 />
-                <label className="text-sm">Reliable internet connection</label>
+                <Label className="text-sm cursor-pointer" onClick={() => setFormData({
+                  ...formData,
+                  technology_access: { ...formData.technology_access, internet_reliable: !formData.technology_access.internet_reliable }
+                })}>
+                  Reliable internet connection
+                </Label>
               </div>
             </div>
           </div>

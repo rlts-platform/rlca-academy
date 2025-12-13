@@ -67,11 +67,10 @@ export default function GradeRecommendation({ data, onGenerateRecommendation, on
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6 space-y-6">
-          {/* Grade Recommendation */}
           <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg">
             <div className="text-sm text-gray-600 mb-2">Recommended Grade</div>
             <div className="text-5xl font-bold text-purple-900 mb-2">
-              {recommendation?.recommended_grade || data.age_estimate_grade}
+              {recommendation?.recommended_grade || data.age_estimate_grade || 'TBD'}
             </div>
             <Badge className={`${
               recommendation?.confidence_level === 'High' ? 'bg-green-100 text-green-800' :
@@ -101,7 +100,6 @@ export default function GradeRecommendation({ data, onGenerateRecommendation, on
             </p>
           </div>
 
-          {/* Student Summary */}
           <div>
             <h3 className="font-semibold text-gray-900 mb-3">Student Profile Summary</h3>
             <div className="grid grid-cols-2 gap-3 text-sm">
@@ -111,25 +109,24 @@ export default function GradeRecommendation({ data, onGenerateRecommendation, on
               </div>
               <div className="p-3 bg-white rounded border">
                 <div className="text-gray-600">Age</div>
-                <div className="font-semibold">{data.age} years old</div>
+                <div className="font-semibold">{data.age || 'N/A'} years old</div>
               </div>
               <div className="p-3 bg-white rounded border">
                 <div className="text-gray-600">Learning Pace</div>
-                <div className="font-semibold">{data.preferred_pace}</div>
+                <div className="font-semibold">{data.preferred_pace || 'Average'}</div>
               </div>
               <div className="p-3 bg-white rounded border">
                 <div className="text-gray-600">Schedule</div>
-                <div className="font-semibold">{data.schedule_type}</div>
+                <div className="font-semibold">{data.schedule_type || 'Full-Time'}</div>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Schedule Preview */}
       <Card className="shadow-lg">
         <CardHeader className="border-b">
-          <CardTitle>Your {data.schedule_type} Schedule</CardTitle>
+          <CardTitle>Your {data.schedule_type || 'Full-Time'} Schedule</CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -150,7 +147,6 @@ export default function GradeRecommendation({ data, onGenerateRecommendation, on
         </CardContent>
       </Card>
 
-      {/* Curriculum Preview */}
       <Card className="shadow-lg">
         <CardHeader className="border-b">
           <CardTitle>Core Subjects</CardTitle>
