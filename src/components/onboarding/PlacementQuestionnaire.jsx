@@ -7,22 +7,24 @@ import { Label } from "@/components/ui/label";
 export default function PlacementQuestionnaire({ age, data, onComplete, onBack }) {
   const [responses, setResponses] = useState(data.questionnaire_responses || {});
 
+  const studentAge = age || data.age || 8;
+
   const getQuestions = () => {
-    if (age <= 7) {
+    if (studentAge <= 7) {
       return [
         { id: 'letters', question: 'Can your child recognize most letters?', options: ['Yes', 'Some', 'No'] },
         { id: 'counting', question: 'Can your child count to 20?', options: ['Yes, and beyond', 'Yes', 'Not yet'] },
         { id: 'listening', question: 'Can your child sit and listen to a short story?', options: ['Yes, easily', 'Sometimes', 'Rarely'] },
         { id: 'writing', question: 'Can your child write their name?', options: ['Yes', 'With help', 'No'] }
       ];
-    } else if (age <= 11) {
+    } else if (studentAge <= 11) {
       return [
         { id: 'reading', question: 'Can your child read a paragraph and explain it?', options: ['Yes, confidently', 'Yes, with some help', 'Still learning'] },
         { id: 'math', question: 'Can your child add and subtract comfortably?', options: ['Yes, easily', 'Yes, but needs practice', 'Not yet'] },
         { id: 'writing', question: 'Can your child write a few sentences independently?', options: ['Yes, well-structured', 'Yes, basic sentences', 'Needs help'] },
         { id: 'focus', question: 'How long can your child focus on schoolwork?', options: ['30+ minutes', '15-30 minutes', 'Less than 15 minutes'] }
       ];
-    } else if (age <= 14) {
+    } else if (studentAge <= 14) {
       return [
         { id: 'paragraph', question: 'Can your child write a full paragraph with a main idea?', options: ['Yes, confidently', 'Yes, with guidance', 'Still developing'] },
         { id: 'math', question: 'Can your child solve multi-step math problems?', options: ['Yes, independently', 'Yes, with some help', 'Not yet'] },
@@ -55,7 +57,7 @@ export default function PlacementQuestionnaire({ age, data, onComplete, onBack }
       <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-blue-50">
         <CardTitle>Academic Readiness Assessment</CardTitle>
         <p className="text-sm text-gray-600 mt-2">
-          Age {age} • These questions help us recommend the right grade placement
+          Age {studentAge} • These questions help us recommend the right grade placement
         </p>
       </CardHeader>
       <CardContent className="p-6">
