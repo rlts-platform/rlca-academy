@@ -23,6 +23,7 @@ import ClubManagement from './pages/ClubManagement';
 import ClubEventDetail from './pages/ClubEventDetail';
 import EnrollmentManagement from './pages/EnrollmentManagement';
 import NotificationSettings from './pages/NotificationSettings';
+import TeacherDashboard from './pages/TeacherDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -52,6 +53,7 @@ export const PAGES = {
     "ClubEventDetail": ClubEventDetail,
     "EnrollmentManagement": EnrollmentManagement,
     "NotificationSettings": NotificationSettings,
+    "TeacherDashboard": TeacherDashboard,
 }
 
 export const pagesConfig = {

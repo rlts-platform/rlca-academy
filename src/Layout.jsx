@@ -142,6 +142,17 @@ export default function Layout({ children, currentPageName }) {
                       <span className="hidden md:inline">Admin</span>
                     </Link>
                     <Link
+                      to={createPageUrl('TeacherDashboard')}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                        currentPageName === 'TeacherDashboard'
+                          ? 'bg-purple-100 text-purple-700 font-semibold'
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      <GraduationCap className="w-4 h-4" />
+                      <span className="hidden md:inline">Teacher</span>
+                    </Link>
+                    <Link
                       to={createPageUrl('EnrollmentManagement')}
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                         currentPageName === 'EnrollmentManagement'
