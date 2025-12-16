@@ -28,6 +28,7 @@ export default function StudentOnboarding() {
 
   useEffect(() => {
     loadUser();
+    loadSavedProgress();
   }, []);
 
   const loadUser = async () => {
@@ -39,6 +40,31 @@ export default function StudentOnboarding() {
       // User not logged in, redirect to get started page
       window.location.href = '/GetStarted';
     }
+  };
+
+  const loadSavedProgress = () => {
+    const saved = localStorage.getItem('onboarding_progress');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setOnboardingData(parsed.data);
+        setStep(parsed.step);
+      } catch (error) {
+        console.error('Error loading saved progress:', error);
+      }
+    }
+  };
+
+  const saveProgress = (currentStep, data) => {
+    localStorage.setItem('onboarding_progress', JSON.stringify({
+      step: currentStep,
+      data: data,
+      timestamp: new Date().toISOString()
+    }));
+  };
+
+  const clearSavedProgress = () => {
+    localStorage.removeItem('onboarding_progress');
   };
 
   const calculateAge = (dob) => {
@@ -89,6 +115,7 @@ export default function StudentOnboarding() {
       return onboardingRecord;
     },
     onSuccess: (result) => {
+      clearSavedProgress();
       alert('Onboarding completed! Your student profile has been created. Welcome to Royal Legends Children Academy!');
       window.location.href = '/StudentDashboard';
     }
@@ -107,7 +134,9 @@ export default function StudentOnboarding() {
     setOnboardingData(updatedData);
     
     if (step < 5) {
-      setStep(step + 1);
+      const nextStep = step + 1;
+      setStep(nextStep);
+      saveProgress(nextStep, updatedData);
     } else {
       finalizeOnboarding(updatedData);
     }
@@ -202,6 +231,13 @@ Provide a thoughtful, encouraging recommendation that honors the child's unique 
               <p className="text-gray-600 mt-1">Let's find the perfect placement for your student</p>
             </div>
           </div>
+
+          {/* Progress Saved Indicator */}
+          {localStorage.getItem('onboarding_progress') && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+              ✓ Your progress is automatically saved. You can continue anytime!
+            </div>
+          )}
 
           {/* Progress Bar */}
           <Card className="shadow-lg mb-6">

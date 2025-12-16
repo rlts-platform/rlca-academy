@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 
 export default function PlacementQuestionnaire({ age, data, onComplete, onBack }) {
   const [responses, setResponses] = useState(data.questionnaire_responses || {});
@@ -67,20 +65,27 @@ export default function PlacementQuestionnaire({ age, data, onComplete, onBack }
               <Label className="text-base font-semibold mb-3 block">
                 {i + 1}. {q.question}
               </Label>
-              <RadioGroup
-                value={responses[q.id]}
-                onValueChange={(value) => setResponses({ ...responses, [q.id]: value })}
-              >
-                <div className="space-y-2">
-                  {q.options.map(option => (
-                    <div key={option} className="flex items-center space-x-3 p-3 border-2 rounded-lg hover:bg-white transition-all cursor-pointer" 
-                         onClick={() => setResponses({ ...responses, [q.id]: option })}>
-                      <RadioGroupItem value={option} id={`${q.id}-${option}`} />
-                      <Label htmlFor={`${q.id}-${option}`} className="cursor-pointer flex-1 font-normal">{option}</Label>
+              <div className="space-y-2">
+                {q.options.map(option => {
+                  const isSelected = responses[q.id] === option;
+                  return (
+                    <div 
+                      key={option} 
+                      className={`flex items-center space-x-3 p-3 border-2 rounded-lg transition-all cursor-pointer ${
+                        isSelected ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:bg-white'
+                      }`}
+                      onClick={() => setResponses({ ...responses, [q.id]: option })}
+                    >
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                        isSelected ? 'border-purple-500' : 'border-gray-300'
+                      }`}>
+                        {isSelected && <div className="w-3 h-3 rounded-full bg-purple-500" />}
+                      </div>
+                      <span className="flex-1 font-normal">{option}</span>
                     </div>
-                  ))}
-                </div>
-              </RadioGroup>
+                  );
+                })}
+              </div>
             </div>
           ))}
 
