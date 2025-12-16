@@ -71,12 +71,15 @@ export default function PlacementQuestionnaire({ age, data, onComplete, onBack }
                 value={responses[q.id]}
                 onValueChange={(value) => setResponses({ ...responses, [q.id]: value })}
               >
-                {q.options.map(option => (
-                  <div key={option} className="flex items-center space-x-2 mb-2">
-                    <RadioGroupItem value={option} id={`${q.id}-${option}`} />
-                    <Label htmlFor={`${q.id}-${option}`} className="cursor-pointer">{option}</Label>
-                  </div>
-                ))}
+                <div className="space-y-2">
+                  {q.options.map(option => (
+                    <div key={option} className="flex items-center space-x-3 p-3 border-2 rounded-lg hover:bg-white transition-all cursor-pointer" 
+                         onClick={() => setResponses({ ...responses, [q.id]: option })}>
+                      <RadioGroupItem value={option} id={`${q.id}-${option}`} />
+                      <Label htmlFor={`${q.id}-${option}`} className="cursor-pointer flex-1 font-normal">{option}</Label>
+                    </div>
+                  ))}
+                </div>
               </RadioGroup>
             </div>
           ))}
