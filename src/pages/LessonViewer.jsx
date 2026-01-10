@@ -45,6 +45,12 @@ export default function LessonViewer() {
     enabled: !!lessonId
   });
 
+  const { data: allLessons = [] } = useQuery({
+    queryKey: ['unit-lessons', lesson?.unit_id],
+    queryFn: () => lesson ? base44.entities.Lesson.filter({ unit_id: lesson.unit_id }, 'order') : [],
+    enabled: !!lesson
+  });
+
   const { data: progress } = useQuery({
     queryKey: ['lesson-progress', lessonId, studentProfile?.id],
     queryFn: async () => {
@@ -151,6 +157,26 @@ export default function LessonViewer() {
     });
   };
 
+  const getCurrentLessonIndex = () => {
+    return allLessons.findIndex(l => l.id === lessonId);
+  };
+
+  const getNextLesson = () => {
+    const currentIndex = getCurrentLessonIndex();
+    if (currentIndex >= 0 && currentIndex < allLessons.length - 1) {
+      return allLessons[currentIndex + 1];
+    }
+    return null;
+  };
+
+  const getPreviousLesson = () => {
+    const currentIndex = getCurrentLessonIndex();
+    if (currentIndex > 0) {
+      return allLessons[currentIndex - 1];
+    }
+    return null;
+  };
+
   if (isLoading || !lesson || !studentProfile) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 flex items-center justify-center">
@@ -166,22 +192,43 @@ export default function LessonViewer() {
   const isMediaComplete = (mediaId) => progress?.media_watched?.find(m => m.media_id === mediaId)?.completed || false;
   const isInteractiveComplete = (elementId) => progress?.interactive_elements_completed?.includes(elementId) || false;
   const getPracticeData = (activityId) => progress?.practice_activities_completed?.find(a => a.activity_id === activityId);
+  
+  const nextLesson = getNextLesson();
+  const previousLesson = getPreviousLesson();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 p-6">
       <div className="max-w-5xl mx-auto">
         <div className="mb-6 flex items-center justify-between">
-          <Button variant="outline" onClick={() => window.history.back()}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => window.location.href = `/UnitView?id=${lesson.unit_id}`}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Unit
+            </Button>
+            
+            {previousLesson && (
+              <Button variant="outline" onClick={() => window.location.href = `/LessonViewer?id=${previousLesson.id}`}>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Previous Lesson
+              </Button>
+            )}
+          </div>
           
-          {progress?.status === "Completed" && (
-            <Badge className="bg-green-600 text-white px-4 py-2">
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Lesson Completed
-            </Badge>
-          )}
+          <div className="flex items-center gap-3">
+            {progress?.status === "Completed" && (
+              <Badge className="bg-green-600 text-white px-4 py-2">
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Completed
+              </Badge>
+            )}
+            
+            {nextLesson && progress?.status === "Completed" && (
+              <Button onClick={() => window.location.href = `/LessonViewer?id=${nextLesson.id}`}>
+                Next Lesson
+                <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
+              </Button>
+            )}
+          </div>
         </div>
 
         <motion.div
@@ -298,7 +345,7 @@ export default function LessonViewer() {
 
           {/* Complete Lesson Button */}
           {progress?.status !== "Completed" && (
-            <Card className="shadow-xl">
+            <Card className="shadow-xl mb-6">
               <CardContent className="p-6 text-center">
                 <p className="text-gray-600 mb-4">
                   Ready to mark this lesson as complete?
@@ -311,6 +358,27 @@ export default function LessonViewer() {
                   <CheckCircle className="w-5 h-5 mr-2" />
                   Mark Lesson Complete
                 </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Navigation to Next Lesson */}
+          {nextLesson && progress?.status === "Completed" && (
+            <Card className="shadow-xl border-2 border-purple-300">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-1">Next Lesson</h3>
+                    <p className="text-gray-600">{nextLesson.title}</p>
+                  </div>
+                  <Button 
+                    onClick={() => window.location.href = `/LessonViewer?id=${nextLesson.id}`}
+                    className="bg-gradient-to-r from-purple-600 to-blue-600"
+                  >
+                    Continue
+                    <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           )}
