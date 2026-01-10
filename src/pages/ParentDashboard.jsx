@@ -29,10 +29,21 @@ export default function ParentDashboard() {
     }
   };
 
-  const { data: students = [] } = useQuery({
-    queryKey: ['parent-students', currentUser?.email],
-    queryFn: () => currentUser ? base44.entities.Student.filter({ parent_email: currentUser.email }) : [],
+  const { data: childLinks = [] } = useQuery({
+    queryKey: ['parent-child-links', currentUser?.email],
+    queryFn: () => currentUser ? base44.entities.ParentChildLink.filter({ parent_email: currentUser.email, status: 'Active' }) : [],
     enabled: !!currentUser
+  });
+
+  const { data: students = [] } = useQuery({
+    queryKey: ['linked-students', childLinks],
+    queryFn: async () => {
+      if (childLinks.length === 0) return [];
+      const studentIds = childLinks.map(link => link.student_id);
+      const allStudents = await base44.entities.Student.list();
+      return allStudents.filter(s => studentIds.includes(s.id));
+    },
+    enabled: childLinks.length > 0
   });
 
   const { data: selectedGrades = [] } = useQuery({
