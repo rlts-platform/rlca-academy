@@ -110,6 +110,27 @@ export default function StudentOnboarding() {
     localStorage.removeItem('onboarding_progress');
   };
 
+  const restartOnboarding = () => {
+    if (!confirm("Restart onboarding for this child? Your current progress will be reset.")) {
+      return;
+    }
+    
+    clearSavedProgress();
+    setStep(1);
+    setOnboardingData({
+      parent_email: currentUser?.email || '',
+      learning_preferences: [],
+      interests: [],
+      biblical_studies: true,
+      character_focus: [],
+      extracurricular_interests: [],
+      language_learning: []
+    });
+    setError(null);
+    
+    console.log('[ONBOARDING] Restart triggered by parent');
+  };
+
   const calculateAge = (dob) => {
     const today = new Date();
     const birthDate = new Date(dob);
