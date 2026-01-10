@@ -63,7 +63,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "StudentDashboard",
+    mainPage: "Home",
     Pages: PAGES,
     Layout: __Layout,
 };
