@@ -274,12 +274,21 @@ Provide a thoughtful, encouraging recommendation that honors the child's unique 
     { num: 5, title: "Review & Recommendation" }
   ];
 
-  if (!currentUser) {
+  // NEVER return null - always render something
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading onboarding...</p>
+        </div>
       </div>
     );
+  }
+
+  // Error fallback - still render onboarding UI
+  if (error) {
+    console.error('[ONBOARDING ERROR]', error);
   }
 
   return (
