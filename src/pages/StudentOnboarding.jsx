@@ -305,12 +305,38 @@ Provide a thoughtful, encouraging recommendation that honors the child's unique 
             </div>
           </div>
 
+          {/* Error Alert */}
+          {error && (
+            <Alert className="mb-6 border-orange-200 bg-orange-50">
+              <AlertCircle className="w-4 h-4" />
+              <AlertDescription>
+                <strong>Connection Issue Detected</strong><br />
+                Your progress is safe. You can continue onboarding or restart anytime.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Progress Saved Indicator */}
           {localStorage.getItem('onboarding_progress') && (
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
-              ✓ Your progress is automatically saved. You can continue anytime!
-            </div>
+            <Alert className="mb-6 border-blue-200 bg-blue-50">
+              <Save className="w-4 h-4" />
+              <AlertDescription>
+                ✓ Your progress is automatically saved. You can continue anytime!
+              </AlertDescription>
+            </Alert>
           )}
+
+          {/* Restart Button */}
+          <div className="mb-6 flex justify-end">
+            <Button 
+              variant="outline" 
+              onClick={restartOnboarding}
+              className="gap-2"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Restart Onboarding
+            </Button>
+          </div>
 
           {/* Progress Bar */}
           <Card className="shadow-lg mb-6">
