@@ -4,7 +4,8 @@ import { useMutation } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, UserPlus } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CheckCircle, UserPlus, RotateCcw, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 import BasicInfoForm from '../components/onboarding/BasicInfoForm';
