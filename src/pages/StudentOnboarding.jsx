@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle, UserPlus, RotateCcw, AlertCircle } from "lucide-react";
+import { CheckCircle, UserPlus, RotateCcw, AlertCircle, Save } from "lucide-react";
 import { motion } from "framer-motion";
 
 import BasicInfoForm from '../components/onboarding/BasicInfoForm';
@@ -13,16 +13,6 @@ import PlacementQuestionnaire from '../components/onboarding/PlacementQuestionna
 import HomeschoolPreferences from '../components/onboarding/HomeschoolPreferences';
 import ExtracurricularSelection from '../components/onboarding/ExtracurricularSelection';
 import GradeRecommendation from '../components/onboarding/GradeRecommendation';
-
-import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
-import { useMutation } from '@tanstack/react-query';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle, UserPlus, RotateCcw, AlertCircle, Save } from "lucide-react";
-import { motion } from "framer-motion";
 
 export default function StudentOnboarding() {
   const [currentUser, setCurrentUser] = useState(null);
