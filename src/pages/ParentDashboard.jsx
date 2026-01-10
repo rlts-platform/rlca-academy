@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Users, BookOpen, Calendar, TrendingUp, Bell, ChevronRight } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Users, Bell, AlertCircle, Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import StudentCard from '../components/dashboard/StudentCard';
-import GradesList from '../components/dashboard/GradesList';
-import AttendanceCalendar from '../components/dashboard/AttendanceCalendar';
-import StatsCard from '../components/dashboard/StatsCard';
-import CourseEnrollmentCard from '../components/enrollment/CourseEnrollmentCard';
-import WeeklyProgressReportGenerator from '../components/communication/WeeklyProgressReportGenerator';
-import AIMessageComposer from '../components/communication/AIMessageComposer';
-import AnnouncementSummarizer from '../components/communication/AnnouncementSummarizer';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import ChildOverviewCard from '../components/parent/ChildOverviewCard';
+import ChildDetailView from '../components/parent/ChildDetailView';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ParentDashboard() {
