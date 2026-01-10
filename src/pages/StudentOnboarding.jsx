@@ -45,6 +45,8 @@ export default function StudentOnboarding() {
 
   const bootstrap = async () => {
     try {
+      setLoading(true);
+      
       // Load user - NEVER block rendering if this fails
       const user = await base44.auth.me().catch(() => null);
       
@@ -66,28 +68,20 @@ export default function StudentOnboarding() {
         const onboardingRecords = await base44.entities.StudentOnboarding.filter({ parent_email: user.email }).catch(() => []);
         
         // If we have an incomplete onboarding, resume it
-        if (onboardingData && localStorage.getItem('onboarding_progress')) {
+        if (localStorage.getItem('onboarding_progress')) {
           // Already loaded from localStorage, just continue
         }
-      } catch (error) {
-        console.error('[Onboarding Bootstrap Error]', error);
+      } catch (err) {
+        console.error('[Onboarding Bootstrap Error]', err);
+        setError(err);
         // Continue anyway - we'll start fresh at Step 1
       }
-    };
-
-    loadUser();
-    loadSavedProgress();
-  }, []);
-
-  const loadUser = async () => {
-    try {
-      const user = await base44.auth.me();
-      setCurrentUser(user);
-      setOnboardingData(prev => ({ ...prev, parent_email: user.email }));
-    } catch (error) {
-      console.error('[ONBOARDING] User load failed:', error);
-      // Don't block - still allow onboarding to render
-      setCurrentUser({ email: '' });
+    } catch (err) {
+      console.error('[CRITICAL] Onboarding bootstrap failed:', err);
+      setError(err);
+      // Still allow rendering - default to Step 1
+    } finally {
+      setLoading(false);
     }
   };
 
