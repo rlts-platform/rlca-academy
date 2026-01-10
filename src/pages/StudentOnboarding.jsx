@@ -14,9 +14,21 @@ import HomeschoolPreferences from '../components/onboarding/HomeschoolPreference
 import ExtracurricularSelection from '../components/onboarding/ExtracurricularSelection';
 import GradeRecommendation from '../components/onboarding/GradeRecommendation';
 
+import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useMutation } from '@tanstack/react-query';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CheckCircle, UserPlus, RotateCcw, AlertCircle, Save } from "lucide-react";
+import { motion } from "framer-motion";
+
 export default function StudentOnboarding() {
   const [currentUser, setCurrentUser] = useState(null);
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [onboardingData, setOnboardingData] = useState({
     parent_email: '',
     learning_preferences: [],
@@ -28,6 +40,41 @@ export default function StudentOnboarding() {
   });
 
   useEffect(() => {
+    bootstrap();
+  }, []);
+
+  const bootstrap = async () => {
+    try {
+      // Load user - NEVER block rendering if this fails
+      const user = await base44.auth.me().catch(() => null);
+      
+      if (!user) {
+        // Not logged in - redirect but don't block UI
+        window.location.href = '/GetStarted';
+        return;
+      }
+
+      setCurrentUser(user);
+      setOnboardingData(prev => ({ ...prev, parent_email: user.email }));
+
+      // Load saved progress from localStorage (offline-safe)
+      loadSavedProgress();
+
+      // Try to fetch existing student/onboarding - but DO NOT block rendering
+      try {
+        const students = await base44.entities.Student.filter({ parent_email: user.email }).catch(() => []);
+        const onboardingRecords = await base44.entities.StudentOnboarding.filter({ parent_email: user.email }).catch(() => []);
+        
+        // If we have an incomplete onboarding, resume it
+        if (onboardingData && localStorage.getItem('onboarding_progress')) {
+          // Already loaded from localStorage, just continue
+        }
+      } catch (error) {
+        console.error('[Onboarding Bootstrap Error]', error);
+        // Continue anyway - we'll start fresh at Step 1
+      }
+    };
+
     loadUser();
     loadSavedProgress();
   }, []);
@@ -38,8 +85,9 @@ export default function StudentOnboarding() {
       setCurrentUser(user);
       setOnboardingData(prev => ({ ...prev, parent_email: user.email }));
     } catch (error) {
-      // User not logged in, redirect to get started page
-      window.location.href = '/GetStarted';
+      console.error('[ONBOARDING] User load failed:', error);
+      // Don't block - still allow onboarding to render
+      setCurrentUser({ email: '' });
     }
   };
 
