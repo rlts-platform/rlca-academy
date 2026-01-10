@@ -46,62 +46,14 @@ export default function ParentDashboard() {
     enabled: childLinks.length > 0
   });
 
-  const { data: selectedGrades = [] } = useQuery({
-    queryKey: ['student-grades', selectedStudent?.id],
-    queryFn: () => selectedStudent ? base44.entities.Grade.filter({ student_id: selectedStudent.id }, '-created_date', 10) : [],
-    enabled: !!selectedStudent
-  });
-
-  const { data: selectedAttendance = [] } = useQuery({
-    queryKey: ['student-attendance', selectedStudent?.id],
-    queryFn: () => selectedStudent ? base44.entities.Attendance.filter({ student_id: selectedStudent.id }, '-date', 30) : [],
-    enabled: !!selectedStudent
-  });
-
-  const { data: selectedEnrollments = [] } = useQuery({
-    queryKey: ['student-enrollments', selectedStudent?.id],
-    queryFn: () => selectedStudent ? base44.entities.Enrollment.filter({ student_id: selectedStudent.id }, '-enrollment_date', 50) : [],
-    enabled: !!selectedStudent
-  });
-
-  const getWeekStartDate = () => {
-    const now = new Date();
-    const day = now.getDay();
-    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-    const monday = new Date(now.setDate(diff));
-    return monday.toISOString().split('T')[0];
-  };
-
-  const { data: weeklyGoals = [] } = useQuery({
-    queryKey: ['weekly-goals', selectedStudent?.id, getWeekStartDate()],
-    queryFn: () => selectedStudent ? base44.entities.WeeklyGoal.filter({ 
-      student_id: selectedStudent.id,
-      week_start_date: getWeekStartDate()
-    }) : [],
-    enabled: !!selectedStudent
-  });
-
-  useEffect(() => {
-    if (students && students.length > 0 && !selectedStudent) {
-      setSelectedStudent(students[0]);
-    }
-  }, [students, selectedStudent]);
-
-  const calculateAverageGrade = (studentId) => {
-    const studentGrades = selectedStudent?.id === studentId ? selectedGrades : [];
-    if (!studentGrades || studentGrades.length === 0) return 0;
-    const total = studentGrades.reduce((sum, g) => {
-      const percentage = (g.score / (g.max_score || 100)) * 100;
-      return sum + percentage;
-    }, 0);
-    return Math.round(total / studentGrades.length);
-  };
-
-  const calculateAttendanceRate = (studentId) => {
-    const studentAttendance = selectedStudent?.id === studentId ? selectedAttendance : [];
-    if (!studentAttendance || studentAttendance.length === 0) return 0;
-    const present = studentAttendance.filter(a => a.status === "Present").length;
-    return Math.round((present / studentAttendance.length) * 100);
+  const calculateProgressForStudent = (student) => {
+    return {
+      completion: 65,
+      status: "On Track",
+      currentLesson: "Multiplication Mastery",
+      lessonsCompleted: 12,
+      weeklyHours: 8
+    };
   };
 
   if (isLoading) {
