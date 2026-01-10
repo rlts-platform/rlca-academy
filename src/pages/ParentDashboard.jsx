@@ -98,7 +98,6 @@ export default function ParentDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -108,11 +107,9 @@ export default function ParentDashboard() {
             <div className="flex items-center gap-4">
               <Users className="w-10 h-10 text-purple-600" />
               <div>
-                <h1 className="text-4xl font-bold text-gray-900">
-                  Parent Dashboard
-                </h1>
+                <h1 className="text-4xl font-bold text-gray-900">Parent Dashboard</h1>
                 <p className="text-gray-600 mt-1">
-                  Managing {students.length} {students.length === 1 ? 'student' : 'students'}
+                  Managing {students.length} {students.length === 1 ? 'child' : 'children'} • {students.length < 10 ? `${10 - students.length} slots available` : 'Maximum reached'}
                 </p>
               </div>
             </div>
@@ -121,112 +118,33 @@ export default function ParentDashboard() {
               Notifications
             </Button>
           </div>
+
+          {students.length < 10 && (
+            <Alert className="border-purple-200 bg-purple-50">
+              <Plus className="w-4 h-4" />
+              <AlertDescription>
+                You can manage up to 10 children. Contact an administrator to link additional students.
+              </AlertDescription>
+            </Alert>
+          )}
         </motion.div>
 
-        {/* Student Selector */}
         <div className="mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Your Children</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Children</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {students.map((student) => (
-              <StudentCard
-                key={student.id}
-                student={student}
-                onSelect={setSelectedStudent}
-              />
-            ))}
+            {students.map((student) => {
+              const progress = calculateProgressForStudent(student);
+              return (
+                <ChildOverviewCard
+                  key={student.id}
+                  student={student}
+                  progress={progress}
+                  onSelect={setSelectedStudent}
+                />
+              );
+            })}
           </div>
         </div>
-
-        {/* Selected Student Details */}
-        {selectedStudent && (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={selectedStudent.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              {/* Stats Cards */}
-              <div className="mb-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <ChevronRight className="w-6 h-6 text-purple-600" />
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    {selectedStudent.full_name}'s Progress
-                  </h2>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <StatsCard
-                    icon={TrendingUp}
-                    title="Average Grade"
-                    value={`${calculateAverageGrade(selectedStudent.id)}%`}
-                    subtitle={`${selectedGrades.length} grades recorded`}
-                    color="purple"
-                  />
-                  <StatsCard
-                    icon={Calendar}
-                    title="Attendance Rate"
-                    value={`${calculateAttendanceRate(selectedStudent.id)}%`}
-                    subtitle={`${selectedAttendance.filter(a => a.status === "Present").length} days present`}
-                    color="blue"
-                  />
-                  <StatsCard
-                    icon={BookOpen}
-                    title="Grade Level"
-                    value={selectedStudent.grade_level}
-                    subtitle={selectedStudent.enrollment_status}
-                    color="gold"
-                  />
-                </div>
-              </div>
-
-              {/* Grades and Attendance */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                <GradesList grades={selectedGrades} title={`${selectedStudent.full_name}'s Recent Grades`} />
-                <AttendanceCalendar attendance={selectedAttendance} title={`${selectedStudent.full_name}'s Attendance`} />
-              </div>
-
-              {/* AI Communication Module */}
-              <div className="space-y-6 mb-8">
-                <h2 className="text-2xl font-bold text-gray-900">AI Communication Center</h2>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <WeeklyProgressReportGenerator 
-                    student={selectedStudent}
-                    grades={selectedGrades}
-                    attendance={selectedAttendance}
-                    weeklyGoals={weeklyGoals}
-                    enrollments={selectedEnrollments}
-                  />
-                  
-                  <AIMessageComposer student={selectedStudent} />
-                </div>
-
-                <AnnouncementSummarizer studentGradeLevel={selectedStudent.grade_level} />
-              </div>
-
-              {/* Enrolled Courses */}
-              <div>
-                <div className="flex items-center gap-2 mb-6">
-                  <BookOpen className="w-6 h-6 text-purple-600" />
-                  <h2 className="text-2xl font-bold text-gray-900">Enrolled Courses</h2>
-                </div>
-                {selectedEnrollments.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {selectedEnrollments.map((enrollment) => (
-                      <CourseEnrollmentCard key={enrollment.id} enrollment={enrollment} />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 bg-white rounded-xl shadow-sm">
-                    <BookOpen className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                    <p className="text-gray-500">No course enrollments found</p>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          </AnimatePresence>
-        )}
       </div>
     </div>
   );
