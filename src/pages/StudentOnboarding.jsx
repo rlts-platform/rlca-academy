@@ -37,17 +37,21 @@ export default function StudentOnboarding() {
     try {
       setLoading(true);
       
-      // Load user - NEVER block rendering if this fails
+      // Load user - parents must have an RLCA account to complete enrollment
       const user = await base44.auth.me().catch(() => null);
       
       if (!user) {
-        // Not logged in - redirect but don't block UI
+        // Not logged in - send to Get Started so they can create/sign in to their RLCA parent account
         window.location.href = '/GetStarted';
         return;
       }
 
       setCurrentUser(user);
-      setOnboardingData(prev => ({ ...prev, parent_email: user.email }));
+      setOnboardingData(prev => ({
+        ...prev,
+        parent_email: user.email,
+        parent_full_name: prev.parent_full_name || user.name || '',
+      }));
 
       // Load saved progress from localStorage (offline-safe)
       loadSavedProgress();
@@ -144,7 +148,10 @@ export default function StudentOnboarding() {
 
   const saveOnboardingMutation = useMutation({
     mutationFn: async (data) => {
-      const onboardingRecord = await base44.entities.StudentOnboarding.create(data);
+      const onboardingRecord = await base44.entities.StudentOnboarding.create({
+        ...data,
+        status: 'Completed',
+      });
       
       // Create parent record if it doesn't exist
       const existingParents = await base44.entities.Parent.filter({ email: data.parent_email });
@@ -156,21 +163,21 @@ export default function StudentOnboarding() {
         });
       }
       
-      // Create the actual Student entity
+      // Create the actual Student entity (auto-Active enrollment)
       await base44.entities.Student.create({
         full_name: `${data.legal_first_name} ${data.legal_last_name}`,
         age: data.age,
         grade_level: data.recommended_grade || data.age_estimate_grade,
         parent_email: data.parent_email,
         student_email: '',
-        enrollment_status: 'Active'
+        enrollment_status: 'Active',
       });
       
       return onboardingRecord;
     },
     onSuccess: (result) => {
       clearSavedProgress();
-      alert('Onboarding completed! Your student profile has been created. Welcome to Royal Legends Children Academy!');
+      alert('Enrollment completed. You\'re now viewing your student\'s dashboard.');
       window.location.href = '/StudentDashboard';
     }
   });
@@ -290,8 +297,10 @@ Provide a thoughtful, encouraging recommendation that honors the child's unique 
               <UserPlus className="w-9 h-9 text-white" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-gray-900">Student Onboarding</h1>
-              <p className="text-gray-600 mt-1">Let's find the perfect placement for your student</p>
+              <h1 className="text-4xl font-bold text-gray-900">Student Enrollment Application</h1>
+              <p className="text-gray-600 mt-1">
+                Complete this enrollment application to create your student&apos;s official record at Royal Legends Children Academy.
+              </p>
             </div>
           </div>
 

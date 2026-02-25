@@ -110,9 +110,9 @@ export default function GetStarted() {
         >
           <Card className="shadow-2xl w-full">
             <CardHeader className="border-b bg-gradient-to-r from-purple-600 to-blue-600 text-white">
-              <CardTitle className="text-2xl text-center">Get Started Today</CardTitle>
+              <CardTitle className="text-2xl text-center">Begin Enrollment</CardTitle>
               <p className="text-center text-sm opacity-90 mt-2">
-                Create your account and begin your child's journey
+                Create your secure RLCA parent account and start your child&apos;s enrollment application.
               </p>
             </CardHeader>
             <CardContent className="p-6">
@@ -155,7 +155,7 @@ export default function GetStarted() {
                   className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                   size="lg"
                 >
-                  {loading ? 'Creating Account...' : 'Create Account & Continue'}
+                  {loading ? 'Redirecting...' : 'Create Account & Begin Enrollment'}
                 </Button>
               </form>
 
@@ -173,8 +173,8 @@ export default function GetStarted() {
 
               <div className="mt-6 p-4 bg-blue-50 rounded-lg">
                 <p className="text-sm text-gray-700 text-center">
-                  <strong>Next Step:</strong> After creating your account, you'll complete a brief 
-                  placement questionnaire to find the perfect grade level for your student.
+                  <strong>Next Step:</strong> After creating your account, you&apos;ll complete a brief
+                  enrollment and placement application so we can create your student&apos;s official record.
                 </p>
               </div>
             </CardContent>
