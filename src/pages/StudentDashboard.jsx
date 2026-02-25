@@ -29,7 +29,16 @@ export default function StudentDashboard() {
       const user = await base44.auth.me();
       setCurrentUser(user);
       
-      const students = await base44.entities.Student.filter({ student_email: user.email });
+      // Prefer matching the student record by student_email, but fall back to parent_email-based match
+      let students = [];
+      if (user.email) {
+        students = await base44.entities.Student.filter({ student_email: user.email }).catch(() => []);
+      }
+
+      if ((!students || students.length === 0) && user.email) {
+        students = await base44.entities.Student.filter({ parent_email: user.email }).catch(() => []);
+      }
+
       if (students && students.length > 0) {
         setStudentProfile(students[0]);
       }
@@ -141,10 +150,24 @@ export default function StudentDashboard() {
   if (!studentProfile) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 flex items-center justify-center p-6">
-        <div className="text-center bg-white p-8 rounded-2xl shadow-xl max-w-md">
-          <GraduationCap className="w-16 h-16 text-purple-600 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Student Profile Not Found</h2>
-          <p className="text-gray-600">Please contact your administrator to set up your student profile.</p>
+        <div className="text-center bg-white p-8 rounded-2xl shadow-xl max-w-md space-y-4">
+          <GraduationCap className="w-16 h-16 text-purple-600 mx-auto mb-2" />
+          <h2 className="text-2xl font-bold text-gray-900">No Student Profile Yet</h2>
+          <p className="text-gray-600">
+            We couldn&apos;t find a student profile linked to this account.
+          </p>
+          <div className="flex flex-col gap-3 mt-4">
+            <Link to={createPageUrl('StudentOnboarding')}>
+              <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                Start Enrollment Application
+              </Button>
+            </Link>
+            <Link to={createPageUrl('ParentDashboard')}>
+              <Button variant="outline" className="w-full">
+                Go to Parent Dashboard
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     );

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
+import { Label } from "@/components/ui/label";
 export default function PlacementQuestionnaire({ age, data, onComplete, onBack }) {
   const [responses, setResponses] = useState(data.questionnaire_responses || {});
 
