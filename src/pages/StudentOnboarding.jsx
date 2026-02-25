@@ -1,409 +1,396 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle, UserPlus, RotateCcw, AlertCircle, Save } from "lucide-react";
-import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { CheckCircle, AlertCircle, RotateCcw, BookOpen } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-import BasicInfoForm from '../components/onboarding/BasicInfoForm';
-import PlacementQuestionnaire from '../components/onboarding/PlacementQuestionnaire';
-import HomeschoolPreferences from '../components/onboarding/HomeschoolPreferences';
-import ExtracurricularSelection from '../components/onboarding/ExtracurricularSelection';
-import GradeRecommendation from '../components/onboarding/GradeRecommendation';
+import ProfileSwitcher from '@/components/ProfileSwitcher';
+import FamilyAccountSetup from '@/components/onboarding/FamilyAccountSetup';
+import FaithAlignmentForm from '@/components/onboarding/FaithAlignmentForm';
+import StudentProfileForm from '@/components/onboarding/StudentProfileForm';
+import ParentLearningProfile from '@/components/onboarding/ParentLearningProfile';
+import PlacementTest from '@/components/onboarding/PlacementTest';
+import PlacementResults from '@/components/onboarding/PlacementResults';
 
+// ─── Step definitions ─────────────────────────────────────────────────────────
+const STEPS = [
+  { num: 1, title: 'Family Account',    short: 'Family' },
+  { num: 2, title: 'Faith Alignment',   short: 'Faith' },
+  { num: 3, title: 'Student Profile',   short: 'Student' },
+  { num: 4, title: 'Learning Profile',  short: 'Learning' },
+  { num: 5, title: 'Placement Test',    short: 'Test' },
+  { num: 6, title: 'Review & Submit',   short: 'Submit' },
+];
+
+const TOTAL_STEPS = STEPS.length;
+const LS_KEY = 'rlca_onboarding_v2';
+
+// ─── Initial state factory ────────────────────────────────────────────────────
+function initialData(userEmail = '') {
+  return {
+    // Family
+    parent_email: userEmail,
+    parent_full_name: '', parent_phone: '',
+    parent2_full_name: '', parent2_email: '', parent2_phone: '',
+    street_address: '', city: '', state: '', zip: '',
+    homeschool_status: '', heard_about_rlca: '',
+    // Faith
+    faith_background: '', christ_centered_meaning: '', character_hopes: '', commitments: [],
+    // Student
+    legal_first_name: '', legal_last_name: '', preferred_nickname: '',
+    date_of_birth: '', gender: '', age: null, age_estimate_grade: '',
+    learning_preferences: [], interests: [], special_needs: [], special_needs_details: '',
+    extracurricular_interests: [], language_learning: [],
+    // Learning Profile
+    learning_success_story: '', learning_struggle_story: '',
+    academic_strengths: '', academic_challenges: '',
+    struggle_areas: [], behavior_patterns: [], frustration_response: '',
+    additional_notes: '', preferred_pace: 'Average', schedule_type: 'Full-Time',
+    biblical_studies: true, character_focus: [],
+    technology_access: { computer_tablet: true, internet_reliable: true },
+    homeschooled_before: false,
+    // Placement
+    placement_scores: null, placement_answers: null,
+    // Submission
+    agreements: {}, digital_signature: '', submitted_at: '', status: 'In Progress',
+  };
+}
+
+// ─── Progress bar ─────────────────────────────────────────────────────────────
+function StepProgress({ currentStep }) {
+  return (
+    <div className="mb-8">
+      <div className="flex items-center justify-between mb-3">
+        {STEPS.map((s, i) => (
+          <React.Fragment key={s.num}>
+            <div className="flex flex-col items-center">
+              <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all
+                ${currentStep > s.num ? 'bg-green-500 text-white' :
+                  currentStep === s.num ? 'text-white shadow-lg' : 'bg-gray-200 text-gray-400'}`}
+                style={currentStep === s.num ? { background: 'linear-gradient(135deg, #1B3A5C, #2a5485)' } : {}}>
+                {currentStep > s.num ? <CheckCircle className="w-4 h-4" /> : s.num}
+              </div>
+              <span className={`text-xs mt-1.5 font-medium hidden sm:block
+                ${currentStep === s.num ? 'text-[#1B3A5C]' : currentStep > s.num ? 'text-green-600' : 'text-gray-400'}`}>
+                {s.short}
+              </span>
+            </div>
+            {i < STEPS.length - 1 && (
+              <div className={`flex-1 h-1 mx-1 rounded transition-all ${currentStep > s.num ? 'bg-green-400' : 'bg-gray-200'}`} />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+      <Progress value={(currentStep / TOTAL_STEPS) * 100} className="h-1.5" />
+      <div className="flex justify-between mt-1.5">
+        <span className="text-xs text-gray-500">{STEPS[currentStep - 1]?.title}</span>
+        <span className="text-xs text-gray-400">Step {currentStep} of {TOTAL_STEPS}</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 export default function StudentOnboarding() {
   const [currentUser, setCurrentUser] = useState(null);
+  const [appState, setAppState] = useState('loading'); // loading | switcher | onboarding | success
+  const [activeChild, setActiveChild] = useState(null); // child being onboarded or null for new
   const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(() => initialData());
   const [error, setError] = useState(null);
-  const [onboardingData, setOnboardingData] = useState({
-    parent_email: '',
-    learning_preferences: [],
-    interests: [],
-    biblical_studies: true,
-    character_focus: [],
-    extracurricular_interests: [],
-    language_learning: []
-  });
+  const [hasSavedProgress, setHasSavedProgress] = useState(false);
 
+  // ── Bootstrap ──────────────────────────────────────────────────────────────
   useEffect(() => {
     bootstrap();
   }, []);
 
   const bootstrap = async () => {
     try {
-      setLoading(true);
-      
-      // Load user - parents must have an RLCA account to complete enrollment
       const user = await base44.auth.me().catch(() => null);
-      
-      if (!user) {
-        // Not logged in - send to Get Started so they can create/sign in to their RLCA parent account
-        window.location.href = '/GetStarted';
-        return;
-      }
-
+      if (!user) { window.location.href = '/GetStarted'; return; }
       setCurrentUser(user);
-      setOnboardingData(prev => ({
-        ...prev,
-        parent_email: user.email,
-        parent_full_name: prev.parent_full_name || user.name || '',
-      }));
+      setData(initialData(user.email));
 
-      // Load saved progress from localStorage (offline-safe)
-      loadSavedProgress();
+      // Check for saved onboarding progress
+      const saved = loadProgress();
+      if (saved) setHasSavedProgress(true);
 
-      // Try to fetch existing student/onboarding - but DO NOT block rendering
-      try {
-        const students = await base44.entities.Student.filter({ parent_email: user.email }).catch(() => []);
-        const onboardingRecords = await base44.entities.StudentOnboarding.filter({ parent_email: user.email }).catch(() => []);
-        
-        // If we have an incomplete onboarding, resume it
-        if (localStorage.getItem('onboarding_progress')) {
-          // Already loaded from localStorage, just continue
-        }
-      } catch (err) {
-        console.error('[Onboarding Bootstrap Error]', err);
-        setError(err);
-        // Continue anyway - we'll start fresh at Step 1
-      }
+      setAppState('switcher');
     } catch (err) {
-      console.error('[CRITICAL] Onboarding bootstrap failed:', err);
-      setError(err);
-      // Still allow rendering - default to Step 1
-    } finally {
-      setLoading(false);
+      console.error('[Onboarding bootstrap]', err);
+      setError('Failed to load. Please refresh the page.');
+      setAppState('switcher');
     }
   };
 
-  const loadSavedProgress = () => {
-    const saved = localStorage.getItem('onboarding_progress');
+  // ── LocalStorage helpers ───────────────────────────────────────────────────
+  const saveProgress = useCallback((stepNum, formData) => {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify({ step: stepNum, data: formData, ts: Date.now() }));
+    } catch (e) { /* storage full — silent fail */ }
+  }, []);
+
+  const loadProgress = () => {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      // Expire after 7 days
+      if (Date.now() - parsed.ts > 7 * 24 * 3600 * 1000) { localStorage.removeItem(LS_KEY); return null; }
+      return parsed;
+    } catch { return null; }
+  };
+
+  const clearProgress = () => localStorage.removeItem(LS_KEY);
+
+  // ── Profile switcher handlers ─────────────────────────────────────────────
+  const handleSelectChild = (child) => {
+    // Navigate to student dashboard for this child
+    sessionStorage.setItem('rlca_active_child', JSON.stringify(child));
+    window.location.href = '/StudentDashboard';
+  };
+
+  const handleAddChild = () => {
+    // Check for saved progress
+    const saved = loadProgress();
     if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setOnboardingData(parsed.data);
-        setStep(parsed.step);
-      } catch (error) {
-        console.error('Error loading saved progress:', error);
-      }
+      setData(saved.data);
+      setStep(saved.step);
+    } else {
+      setData(initialData(currentUser?.email || ''));
+      setStep(1);
     }
+    setAppState('onboarding');
   };
 
-  const saveProgress = (currentStep, data) => {
-    localStorage.setItem('onboarding_progress', JSON.stringify({
-      step: currentStep,
-      data: data,
-      timestamp: new Date().toISOString()
-    }));
+  const handleEditChild = (child) => {
+    // Pre-populate data from existing child record and go to profile edit
+    setActiveChild(child);
+    setData({ ...initialData(currentUser?.email || ''), ...child });
+    setStep(3); // Skip to student profile step
+    setAppState('onboarding');
   };
 
-  const clearSavedProgress = () => {
-    localStorage.removeItem('onboarding_progress');
+  // ── Step completion handler ────────────────────────────────────────────────
+  const handleStepComplete = (stepData) => {
+    // Merge new step data into master data object
+    const updated = { ...data, ...stepData };
+    setData(updated);
+
+    if (step < TOTAL_STEPS) {
+      const next = step + 1;
+      setStep(next);
+      saveProgress(next, updated);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    // Step TOTAL_STEPS (PlacementResults) calls handleFinalSubmit directly
+  };
+
+  const handleBack = () => {
+    if (step === 1) {
+      setAppState('switcher');
+    } else {
+      const prev = step - 1;
+      setStep(prev);
+      saveProgress(prev, data);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const restartOnboarding = () => {
-    if (!confirm("Restart onboarding for this child? Your current progress will be reset.")) {
-      return;
-    }
-    
-    clearSavedProgress();
+    if (!confirm('Reset this onboarding? All progress will be cleared.')) return;
+    clearProgress();
+    setData(initialData(currentUser?.email || ''));
     setStep(1);
-    setOnboardingData({
-      parent_email: currentUser?.email || '',
-      learning_preferences: [],
-      interests: [],
-      biblical_studies: true,
-      character_focus: [],
-      extracurricular_interests: [],
-      language_learning: []
-    });
     setError(null);
-    
-    console.log('[ONBOARDING] Restart triggered by parent');
   };
 
-  const calculateAge = (dob) => {
-    const today = new Date();
-    const birthDate = new Date(dob);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
-  };
-
-  const getGradeByAge = (age) => {
-    const ageGradeMap = {
-      5: "Kindergarten", 6: "1st Grade", 7: "2nd Grade", 8: "3rd Grade",
-      9: "4th Grade", 10: "5th Grade", 11: "6th Grade", 12: "7th Grade",
-      13: "8th Grade", 14: "9th Grade", 15: "10th Grade", 16: "11th Grade",
-      17: "12th Grade", 18: "12th Grade"
-    };
-    return ageGradeMap[age] || "To Be Determined";
-  };
-
-  const saveOnboardingMutation = useMutation({
-    mutationFn: async (data) => {
+  // ── Final submission ───────────────────────────────────────────────────────
+  const submitMutation = useMutation({
+    mutationFn: async (finalData) => {
+      // 1. Create StudentOnboarding record
       const onboardingRecord = await base44.entities.StudentOnboarding.create({
-        ...data,
-        status: 'Completed',
+        ...finalData,
+        parent_email: finalData.parent_email,
+        status: 'Submitted',
       });
-      
-      // Create parent record if it doesn't exist
-      const existingParents = await base44.entities.Parent.filter({ email: data.parent_email });
+
+      // 2. Upsert Parent record
+      const existingParents = await base44.entities.Parent.filter({ email: finalData.parent_email }).catch(() => []);
       if (existingParents.length === 0) {
         await base44.entities.Parent.create({
-          full_name: data.parent_full_name,
-          email: data.parent_email,
-          phone: data.parent_phone || ''
+          full_name: finalData.parent_full_name,
+          email: finalData.parent_email,
+          phone: finalData.parent_phone || '',
+          address: `${finalData.street_address}, ${finalData.city}, ${finalData.state} ${finalData.zip}`,
         });
       }
-      
-      // Create the actual Student entity (auto-Active enrollment)
-      await base44.entities.Student.create({
-        full_name: `${data.legal_first_name} ${data.legal_last_name}`,
-        age: data.age,
-        grade_level: data.recommended_grade || data.age_estimate_grade,
-        parent_email: data.parent_email,
-        student_email: '',
-        enrollment_status: 'Active',
+
+      // 3. Create Student record
+      const student = await base44.entities.Student.create({
+        full_name: `${finalData.legal_first_name} ${finalData.legal_last_name}`,
+        age: finalData.age,
+        grade_level: finalData.age_estimate_grade,
+        parent_email: finalData.parent_email,
+        enrollment_status: 'Pending Review',
+        placement_level: finalData.placement_scores
+          ? Object.values(finalData.placement_scores)
+              .filter(s => s?.level && s.level !== 'To be reviewed')
+              .map(s => s.level)[0] || 'Developing'
+          : 'Developing',
       });
-      
-      return onboardingRecord;
+
+      return { onboardingRecord, student };
     },
-    onSuccess: (result) => {
-      clearSavedProgress();
-      alert('Enrollment completed. You\'re now viewing your student\'s dashboard.');
-      window.location.href = '/StudentDashboard';
-    }
+    onSuccess: () => {
+      clearProgress();
+      setAppState('success');
+    },
+    onError: (err) => {
+      console.error('[Onboarding submit error]', err);
+      setError('Submission failed. Please try again or contact RLCA directly.');
+    },
   });
 
-  const handleStepComplete = (stepData) => {
-    const updatedData = { ...onboardingData, ...stepData };
-    
-    if (step === 1 && stepData.date_of_birth) {
-      const age = calculateAge(stepData.date_of_birth);
-      const estimatedGrade = getGradeByAge(age);
-      updatedData.age = age;
-      updatedData.age_estimate_grade = estimatedGrade;
-    }
-    
-    setOnboardingData(updatedData);
-    
-    if (step < 5) {
-      const nextStep = step + 1;
-      setStep(nextStep);
-      saveProgress(nextStep, updatedData);
-    } else {
-      finalizeOnboarding(updatedData);
-    }
+  const handleFinalSubmit = (submissionData) => {
+    const finalData = { ...data, ...submissionData };
+    setData(finalData);
+    submitMutation.mutate(finalData);
   };
 
-  const finalizeOnboarding = async (data) => {
-    const aiRecommendation = await generateGradeRecommendation(data);
-    const finalData = { ...data, ...aiRecommendation, status: 'Completed' };
-    saveOnboardingMutation.mutate(finalData);
-  };
-
-  const generateGradeRecommendation = async (data) => {
-    const prompt = `You are an educational placement specialist at Royal Legends Children Academy, a faith-based homeschool.
-
-STUDENT PROFILE:
-- Age: ${data.age}
-- Age-Based Estimate: ${data.age_estimate_grade}
-- Previously Homeschooled: ${data.homeschooled_before ? 'Yes' : 'No'}
-- Learning Pace Preference: ${data.preferred_pace || 'Average'}
-- Learning Challenges: ${data.learning_challenges || 'None noted'}
-
-QUESTIONNAIRE RESPONSES:
-${JSON.stringify(data.questionnaire_responses, null, 2)}
-
-PLACEMENT TASK:
-Analyze the student's age, questionnaire responses, and background to recommend:
-1. Primary grade placement
-2. Alternative grade (if applicable)
-3. Confidence level (High/Medium/Needs Review)
-4. Brief explanation for parents
-
-Consider:
-- Academic readiness vs age
-- Homeschool flexibility (not bound by traditional age-grade)
-- Developmental readiness
-- Parent preferences
-
-Provide a thoughtful, encouraging recommendation that honors the child's unique development.`;
-
-    try {
-      const response = await base44.integrations.Core.InvokeLLM({
-        prompt,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            recommended_grade: { type: "string" },
-            alternate_grade: { type: "string" },
-            confidence_level: { type: "string", enum: ["High", "Medium", "Needs Review"] },
-            explanation: { type: "string" },
-            readiness_score: { type: "number", description: "1-100 score" }
-          }
-        }
-      });
-      return response;
-    } catch (error) {
-      console.error("AI recommendation error:", error);
-      return {
-        recommended_grade: data.age_estimate_grade,
-        confidence_level: "Medium",
-        explanation: "Based on age estimate. Schedule a call for personalized placement.",
-        readiness_score: 75
-      };
-    }
-  };
-
-  const steps = [
-    { num: 1, title: "Basic Information" },
-    { num: 2, title: "Placement Assessment" },
-    { num: 3, title: "Learning Preferences" },
-    { num: 4, title: "Interests & Activities" },
-    { num: 5, title: "Review & Recommendation" }
-  ];
-
-  // NEVER return null - always render something
-  if (loading) {
+  // ── Render: Loading ────────────────────────────────────────────────────────
+  if (appState === 'loading') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center"
+           style={{ background: 'linear-gradient(135deg, #0f1923 0%, #1B3A5C 50%, #0f1923 100%)' }}>
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading onboarding...</p>
+          <div className="w-12 h-12 border-4 border-[#C5972B] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-400">Loading...</p>
         </div>
       </div>
     );
   }
 
-  // Error fallback - still render onboarding UI
-  if (error) {
-    console.error('[ONBOARDING ERROR]', error);
+  // ── Render: Profile switcher ───────────────────────────────────────────────
+  if (appState === 'switcher') {
+    return (
+      <ProfileSwitcher
+        currentUser={currentUser}
+        onSelectChild={handleSelectChild}
+        onAddChild={handleAddChild}
+        onEditChild={handleEditChild}
+      />
+    );
   }
 
+  // ── Render: Success ────────────────────────────────────────────────────────
+  if (appState === 'success') {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6"
+           style={{ background: 'linear-gradient(135deg, #0f1923 0%, #1B3A5C 50%, #0f1923 100%)' }}>
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+          className="text-center max-w-md">
+          <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center mx-auto mb-6 shadow-2xl">
+            <CheckCircle className="w-10 h-10 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-3">Application Submitted!</h1>
+          <p className="text-gray-300 mb-2">
+            Welcome to Royal Legends Children Academy, {data.legal_first_name}!
+          </p>
+          <p className="text-gray-400 text-sm mb-8">
+            RLCA will review your application and respond within 5 business days at{' '}
+            <strong className="text-white">{data.parent_email}</strong>.
+          </p>
+          <Button onClick={() => setAppState('switcher')}
+            className="text-white px-8"
+            style={{ background: 'linear-gradient(135deg, #C5972B, #a07820)' }}>
+            Return to Profiles
+          </Button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // ── Render: Onboarding flow ────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 p-6">
-      <div className="max-w-4xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-xl">
-              <UserPlus className="w-9 h-9 text-white" />
+    <div className="min-h-screen py-8 px-4" style={{ backgroundColor: '#f8fafc' }}>
+      <div className="max-w-3xl mx-auto">
+
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#1B3A5C' }}>
+              <BookOpen className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-gray-900">Student Enrollment Application</h1>
-              <p className="text-gray-600 mt-1">
-                Complete this enrollment application to create your student&apos;s official record at Royal Legends Children Academy.
-              </p>
+              <h1 className="text-2xl font-bold text-gray-900">RLCA Academy</h1>
+              <p className="text-gray-500 text-sm">Student Enrollment — {activeChild ? 'Edit Profile' : 'New Child'}</p>
             </div>
           </div>
+          <Button variant="ghost" size="sm" onClick={restartOnboarding}
+            className="text-gray-400 hover:text-gray-600 gap-1.5 text-xs">
+            <RotateCcw className="w-3.5 h-3.5" /> Restart
+          </Button>
+        </div>
 
-          {/* Error Alert */}
-          {error && (
-            <Alert className="mb-6 border-orange-200 bg-orange-50">
-              <AlertCircle className="w-4 h-4" />
-              <AlertDescription>
-                <strong>Connection Issue Detected</strong><br />
-                Your progress is safe. You can continue onboarding or restart anytime.
-              </AlertDescription>
-            </Alert>
-          )}
+        {/* Error alert */}
+        {error && (
+          <Alert className="mb-4 border-red-200 bg-red-50">
+            <AlertCircle className="w-4 h-4 text-red-500" />
+            <AlertDescription className="text-red-700">{error}</AlertDescription>
+          </Alert>
+        )}
 
-          {/* Progress Saved Indicator */}
-          {localStorage.getItem('onboarding_progress') && (
-            <Alert className="mb-6 border-blue-200 bg-blue-50">
-              <Save className="w-4 h-4" />
-              <AlertDescription>
-                ✓ Your progress is automatically saved. You can continue anytime!
-              </AlertDescription>
-            </Alert>
-          )}
+        {/* Saved progress alert */}
+        {hasSavedProgress && step > 1 && (
+          <Alert className="mb-4 border-blue-200 bg-blue-50">
+            <CheckCircle className="w-4 h-4 text-blue-500" />
+            <AlertDescription className="text-blue-700">Progress restored — you can continue where you left off.</AlertDescription>
+          </Alert>
+        )}
 
-          {/* Restart Button */}
-          <div className="mb-6 flex justify-end">
-            <Button 
-              variant="outline" 
-              onClick={restartOnboarding}
-              className="gap-2"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Restart Onboarding
-            </Button>
-          </div>
+        {/* Progress bar */}
+        <StepProgress currentStep={step} />
 
-          {/* Progress Bar */}
-          <Card className="shadow-lg mb-6">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                {steps.map((s, i) => (
-                  <div key={s.num} className="flex items-center">
-                    <div className={`flex flex-col items-center ${i < steps.length - 1 ? 'flex-1' : ''}`}>
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                        step > s.num ? 'bg-green-500 text-white' :
-                        step === s.num ? 'bg-purple-600 text-white' :
-                        'bg-gray-200 text-gray-500'
-                      }`}>
-                        {step > s.num ? <CheckCircle className="w-5 h-5" /> : s.num}
-                      </div>
-                      <div className="text-xs mt-2 text-center font-semibold">{s.title}</div>
-                    </div>
-                    {i < steps.length - 1 && (
-                      <div className={`h-1 flex-1 mx-2 ${step > s.num ? 'bg-green-500' : 'bg-gray-200'}`} />
-                    )}
-                  </div>
-                ))}
-              </div>
-              <Progress value={(step / 5) * 100} className="h-2" />
-            </CardContent>
-          </Card>
-        </motion.div>
+        {/* Step content */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -24 }}
+            transition={{ duration: 0.2 }}
+          >
+            {step === 1 && (
+              <FamilyAccountSetup data={data} onComplete={handleStepComplete} onBack={handleBack} />
+            )}
+            {step === 2 && (
+              <FaithAlignmentForm data={data} onComplete={handleStepComplete} onBack={handleBack} />
+            )}
+            {step === 3 && (
+              <StudentProfileForm data={data} onComplete={handleStepComplete} onBack={handleBack} />
+            )}
+            {step === 4 && (
+              <ParentLearningProfile data={data} onComplete={handleStepComplete} onBack={handleBack} />
+            )}
+            {step === 5 && (
+              <PlacementTest data={data} onComplete={handleStepComplete} onBack={handleBack} />
+            )}
+            {step === 6 && (
+              <PlacementResults
+                data={data}
+                onComplete={handleFinalSubmit}
+                onBack={handleBack}
+                isSubmitting={submitMutation.isPending}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
 
-        {/* Step Content */}
-        <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-          {step === 1 && (
-            <BasicInfoForm 
-              data={onboardingData} 
-              onComplete={handleStepComplete}
-              onBack={() => window.history.back()}
-            />
-          )}
-          {step === 2 && (
-            <PlacementQuestionnaire 
-              age={onboardingData.age}
-              data={onboardingData}
-              onComplete={handleStepComplete}
-              onBack={() => setStep(step - 1)}
-            />
-          )}
-          {step === 3 && (
-            <HomeschoolPreferences 
-              data={onboardingData}
-              onComplete={handleStepComplete}
-              onBack={() => setStep(step - 1)}
-            />
-          )}
-          {step === 4 && (
-            <ExtracurricularSelection 
-              data={onboardingData}
-              onComplete={handleStepComplete}
-              onBack={() => setStep(step - 1)}
-            />
-          )}
-          {step === 5 && (
-            <GradeRecommendation 
-              data={onboardingData}
-              onGenerateRecommendation={generateGradeRecommendation}
-              onFinalize={finalizeOnboarding}
-              onBack={() => setStep(step - 1)}
-            />
-          )}
-        </motion.div>
       </div>
     </div>
   );
