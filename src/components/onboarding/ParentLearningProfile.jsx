@@ -114,7 +114,7 @@ export default function ParentLearningProfile({ data, onComplete, onBack }) {
           </div>
           <div>
             <CardTitle className="text-white text-xl">Parent Learning Profile</CardTitle>
-            <p className="text-blue-200 text-sm mt-0.5">Step 4 of 8 — Help us understand how your child learns best</p>
+            <p className="text-blue-200 text-sm mt-0.5">Step 3 of 5 — Help us understand how your child learns best</p>
           </div>
         </div>
       </CardHeader>
