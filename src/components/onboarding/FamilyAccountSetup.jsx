@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Home, Users } from 'lucide-react';
 
 const US_STATES = [
@@ -14,33 +16,52 @@ const US_STATES = [
   'VA','WA','WV','WI','WY','DC'
 ];
 
+const COMMITMENTS = [
+  { id: 'statement_of_faith', label: "Support RLCA's biblical worldview curriculum" },
+  { id: 'model_character',    label: 'Model Christ-centered character at home' },
+  { id: 'parent_involvement', label: 'Participate in required parent involvement' },
+  { id: 'code_of_conduct',    label: 'Follow the RLCA Code of Conduct' },
+];
+
 export default function FamilyAccountSetup({ data, onComplete, onBack }) {
   const [formData, setFormData] = useState({
-    parent_full_name:        data.parent_full_name || '',
-    parent_email:            data.parent_email || '',
-    parent_phone:            data.parent_phone || '',
-    parent2_full_name:       data.parent2_full_name || '',
-    parent2_email:           data.parent2_email || '',
-    parent2_phone:           data.parent2_phone || '',
-    street_address:          data.street_address || '',
-    city:                    data.city || '',
-    state:                   data.state || '',
-    zip:                     data.zip || '',
-    homeschool_status:       data.homeschool_status || '',
-    heard_about_rlca:        data.heard_about_rlca || '',
+    parent_full_name:   data.parent_full_name || '',
+    parent_email:       data.parent_email || '',
+    parent_phone:       data.parent_phone || '',
+    parent2_full_name:  data.parent2_full_name || '',
+    parent2_email:      data.parent2_email || '',
+    parent2_phone:      data.parent2_phone || '',
+    street_address:     data.street_address || '',
+    city:               data.city || '',
+    state:              data.state || '',
+    zip:                data.zip || '',
+    homeschool_status:  data.homeschool_status || '',
+    heard_about_rlca:   data.heard_about_rlca || '',
+    faith_background:   data.faith_background || '',
+    commitments:        data.commitments || [],
   });
   const [errors, setErrors] = useState({});
+
+  const set = (key, value) => {
+    setFormData(prev => ({ ...prev, [key]: value }));
+    setErrors(prev => ({ ...prev, [key]: '' }));
+  };
+
+  const toggleCommitment = (id) => {
+    const current = formData.commitments;
+    const updated = current.includes(id) ? current.filter(c => c !== id) : [...current, id];
+    set('commitments', updated);
+  };
 
   const validate = () => {
     const e = {};
     if (!formData.parent_full_name.trim()) e.parent_full_name = 'Required';
-    if (!formData.parent_email.trim())     e.parent_email = 'Required';
-    if (!/\S+@\S+\.\S+/.test(formData.parent_email)) e.parent_email = 'Enter a valid email';
-    if (!formData.street_address.trim())   e.street_address = 'Required';
-    if (!formData.city.trim())             e.city = 'Required';
-    if (!formData.state)                   e.state = 'Required';
-    if (!formData.zip.trim())              e.zip = 'Required';
-    if (!formData.homeschool_status)       e.homeschool_status = 'Required';
+    if (!formData.parent_email.trim() || !/\S+@\S+\.\S+/.test(formData.parent_email)) e.parent_email = 'Valid email required';
+    if (!formData.street_address.trim()) e.street_address = 'Required';
+    if (!formData.city.trim()) e.city = 'Required';
+    if (!formData.state) e.state = 'Required';
+    if (!formData.zip.trim()) e.zip = 'Required';
+    if (!formData.homeschool_status) e.homeschool_status = 'Required';
     return e;
   };
 
@@ -60,7 +81,7 @@ export default function FamilyAccountSetup({ data, onComplete, onBack }) {
         type={type}
         value={formData[key]}
         placeholder={placeholder}
-        onChange={e => { setFormData({ ...formData, [key]: e.target.value }); setErrors({ ...errors, [key]: '' }); }}
+        onChange={e => set(key, e.target.value)}
         className={errors[key] ? 'border-red-400' : ''}
       />
       {errors[key] && <p className="text-red-500 text-xs mt-1">{errors[key]}</p>}
@@ -76,7 +97,7 @@ export default function FamilyAccountSetup({ data, onComplete, onBack }) {
           </div>
           <div>
             <CardTitle className="text-white text-xl">Family Account Setup</CardTitle>
-            <p className="text-blue-200 text-sm mt-0.5">Step 1 of 8 — Your family's account information</p>
+            <p className="text-blue-200 text-sm mt-0.5">Step 1 of 5 — Your family information</p>
           </div>
         </div>
       </CardHeader>
@@ -99,10 +120,9 @@ export default function FamilyAccountSetup({ data, onComplete, onBack }) {
           {/* Secondary Parent */}
           <section>
             <h3 className="text-base font-bold text-[#1B3A5C] mb-1 pb-2 border-b border-gray-100">
-              Secondary Parent / Guardian
-              <span className="font-normal text-gray-400 text-sm ml-2">(optional)</span>
+              Secondary Parent / Guardian <span className="font-normal text-gray-400 text-sm">(optional)</span>
             </h3>
-            <p className="text-xs text-gray-500 mb-4">Add a second parent or guardian who should receive communications.</p>
+            <p className="text-xs text-gray-500 mb-4">Add a second parent or guardian for communications.</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">{field('parent2_full_name', 'Full Legal Name', 'text', 'John Smith', false)}</div>
               {field('parent2_email', 'Email Address', 'email', 'john@example.com', false)}
@@ -120,10 +140,8 @@ export default function FamilyAccountSetup({ data, onComplete, onBack }) {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {field('city', 'City', 'text', 'Springfield')}
                 <div>
-                  <Label className="mb-1.5 block text-sm font-semibold text-gray-700">
-                    State <span className="text-red-500">*</span>
-                  </Label>
-                  <Select value={formData.state} onValueChange={v => { setFormData({ ...formData, state: v }); setErrors({ ...errors, state: '' }); }}>
+                  <Label className="mb-1.5 block text-sm font-semibold text-gray-700">State <span className="text-red-500">*</span></Label>
+                  <Select value={formData.state} onValueChange={v => set('state', v)}>
                     <SelectTrigger className={errors.state ? 'border-red-400' : ''}>
                       <SelectValue placeholder="State" />
                     </SelectTrigger>
@@ -145,22 +163,18 @@ export default function FamilyAccountSetup({ data, onComplete, onBack }) {
             </h3>
             <RadioGroup
               value={formData.homeschool_status}
-              onValueChange={v => { setFormData({ ...formData, homeschool_status: v }); setErrors({ ...errors, homeschool_status: '' }); }}
+              onValueChange={v => set('homeschool_status', v)}
               className="space-y-3"
             >
               {[
-                { value: 'active', label: 'Actively homeschooling', desc: 'We already file / declare homeschool annually in our state.' },
-                { value: 'starting', label: 'Starting homeschool', desc: 'This will be our first year homeschooling.' },
-                { value: 'needs_guidance', label: 'Not yet — need guidance', desc: 'We need help understanding the process in our state.' },
+                { value: 'active',         label: 'Actively homeschooling',   desc: 'We already file / declare homeschool annually in our state.' },
+                { value: 'starting',       label: 'Starting homeschool',      desc: 'This will be our first year homeschooling.' },
+                { value: 'needs_guidance', label: 'Not yet — need guidance',  desc: 'We need help understanding the process in our state.' },
               ].map(opt => (
-                <div
-                  key={opt.value}
+                <div key={opt.value}
                   className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all
-                    ${formData.homeschool_status === opt.value
-                      ? 'border-[#1B3A5C] bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'}`}
-                  onClick={() => { setFormData({ ...formData, homeschool_status: opt.value }); setErrors({ ...errors, homeschool_status: '' }); }}
-                >
+                    ${formData.homeschool_status === opt.value ? 'border-[#1B3A5C] bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
+                  onClick={() => set('homeschool_status', opt.value)}>
                   <RadioGroupItem value={opt.value} className="mt-0.5" />
                   <div>
                     <p className="font-semibold text-gray-900 text-sm">{opt.label}</p>
@@ -171,18 +185,52 @@ export default function FamilyAccountSetup({ data, onComplete, onBack }) {
             </RadioGroup>
             {errors.homeschool_status && <p className="text-red-500 text-xs mt-2">{errors.homeschool_status}</p>}
             <p className="text-xs text-gray-400 mt-3 italic">
-              Note: RLCA operates as a hybrid co-op. Families must maintain legal homeschool status.
-              RLCA provides general guidance but cannot provide legal advice on state requirements.
+              RLCA operates as a hybrid co-op. Families must maintain legal homeschool status.
             </p>
+          </section>
+
+          {/* Faith (lightweight) */}
+          <section>
+            <h3 className="text-base font-bold text-[#1B3A5C] mb-4 pb-2 border-b border-gray-100">
+              Faith Foundation
+            </h3>
+            <div className="space-y-5">
+              <div>
+                <Label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                  Briefly describe your family's faith background <span className="text-gray-400 font-normal">(optional)</span>
+                </Label>
+                <Textarea
+                  value={formData.faith_background}
+                  placeholder="e.g., We attend Grace Community Church and are involved in small group ministry..."
+                  rows={2}
+                  onChange={e => set('faith_background', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label className="mb-3 block text-sm font-semibold text-gray-700">Our family commits to: <span className="text-gray-400 font-normal">(optional)</span></Label>
+                <div className="space-y-2">
+                  {COMMITMENTS.map(c => {
+                    const checked = formData.commitments.includes(c.id);
+                    return (
+                      <div key={c.id}
+                        className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all
+                          ${checked ? 'border-[#1B3A5C] bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
+                        onClick={() => toggleCommitment(c.id)}>
+                        <Checkbox checked={checked} onCheckedChange={() => toggleCommitment(c.id)} />
+                        <p className="text-sm text-gray-800">{c.label}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
           </section>
 
           {/* How did you hear */}
           <section>
             <Label className="mb-1.5 block text-sm font-semibold text-gray-700">How did you hear about RLCA?</Label>
-            <Select value={formData.heard_about_rlca} onValueChange={v => setFormData({ ...formData, heard_about_rlca: v })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select one (optional)" />
-              </SelectTrigger>
+            <Select value={formData.heard_about_rlca} onValueChange={v => set('heard_about_rlca', v)}>
+              <SelectTrigger><SelectValue placeholder="Select one (optional)" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="word_of_mouth">Word of mouth / personal referral</SelectItem>
                 <SelectItem value="church">Church network or pastor referral</SelectItem>
