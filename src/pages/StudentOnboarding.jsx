@@ -96,6 +96,7 @@ export default function StudentOnboarding() {
   useEffect(() => { bootstrap(); }, []);
 
   const bootstrap = async () => {
+    if (appState !== "loading") return; // prevent re-run
     try {
       const user = await base44.auth.me().catch(() => null);
       if (!user) { window.location.href = '/GetStarted'; return; }
