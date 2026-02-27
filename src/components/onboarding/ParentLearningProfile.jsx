@@ -121,22 +121,7 @@ export default function ParentLearningProfile({ data, onComplete, onBack }) {
     onComplete(formData);
   };
 
-  const renderTextArea = (key, label, placeholder, hint = '', required = true) => (
-    <div>
-      <Label className="mb-1.5 block text-sm font-semibold text-gray-700">
-        {label}{required && <span className="text-red-500 ml-1">*</span>}
-      </Label>
-      {hint && <p className="text-xs text-gray-500 mb-2">{hint}</p>}
-      <Textarea
-        value={formData[key]}
-        placeholder={placeholder}
-        rows={3}
-        onChange={e => handleFieldChange(key, e.target.value)}
-        className={errors[key] ? 'border-red-400' : ''}
-      />
-      {errors[key] && <p className="text-red-500 text-xs mt-1">{errors[key]}</p>}
-    </div>
-  );
+
 
   return (
     <Card className="shadow-xl border-0">
