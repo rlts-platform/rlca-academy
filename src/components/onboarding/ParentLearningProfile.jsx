@@ -151,10 +151,8 @@ export default function ParentLearningProfile({ data, onComplete, onBack }) {
           <section>
             <h3 className="text-base font-bold text-[#1B3A5C] mb-4 pb-2 border-b border-gray-100">Learning Stories</h3>
             <div className="space-y-5">
-              {renderTextArea('learning_success_story', 'Describe a time your child learned something quickly and easily. What made it work?',
-                'e.g., When we used Legos to explain fractions, it clicked immediately. She loves building things...')}
-              {renderTextArea('learning_struggle_story', 'Describe a time learning was really hard for your child. What caused it?',
-                "e.g., He really struggles with reading comprehension when the material isn't interesting to him...")}
+              <TextAreaField fieldKey="learning_success_story" label="Describe a time your child learned something quickly and easily. What made it work?" placeholder="e.g., When we used Legos to explain fractions, it clicked immediately. She loves building things..." value={formData.learning_success_story} error={errors.learning_success_story} onChange={handleFieldChange} />
+              <TextAreaField fieldKey="learning_struggle_story" label="Describe a time learning was really hard for your child. What caused it?" placeholder="e.g., He really struggles with reading comprehension when the material isn't interesting to him..." value={formData.learning_struggle_story} error={errors.learning_struggle_story} onChange={handleFieldChange} />
             </div>
           </section>
 
