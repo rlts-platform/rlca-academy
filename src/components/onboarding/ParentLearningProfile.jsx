@@ -160,10 +160,8 @@ export default function ParentLearningProfile({ data, onComplete, onBack }) {
           <section>
             <h3 className="text-base font-bold text-[#1B3A5C] mb-4 pb-2 border-b border-gray-100">Academic Strengths & Challenges</h3>
             <div className="space-y-5">
-              {renderTextArea('academic_strengths', 'What subjects or skills does your child naturally excel at?',
-                'e.g., Math, anything creative, science experiments...', '', false)}
-              {renderTextArea('academic_challenges', 'What subjects or skills are the hardest for your child?',
-                'e.g., Writing, sitting still for long periods, spelling...', '', false)}
+              <TextAreaField fieldKey="academic_strengths" label="What subjects or skills does your child naturally excel at?" placeholder="e.g., Math, anything creative, science experiments..." required={false} value={formData.academic_strengths} error={errors.academic_strengths} onChange={handleFieldChange} />
+              <TextAreaField fieldKey="academic_challenges" label="What subjects or skills are the hardest for your child?" placeholder="e.g., Writing, sitting still for long periods, spelling..." required={false} value={formData.academic_challenges} error={errors.academic_challenges} onChange={handleFieldChange} />
               <CheckGrid
                 label="My child currently struggles with:"
                 stateKey="struggle_areas"
