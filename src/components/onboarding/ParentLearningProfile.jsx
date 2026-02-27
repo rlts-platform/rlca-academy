@@ -186,8 +186,7 @@ export default function ParentLearningProfile({ data, onComplete, onBack }) {
                 values={formData.behavior_patterns}
                 onToggle={toggle}
               />
-              {renderTextArea('additional_notes', "Anything else about your child's personality or needs we should know before Day 1?",
-                'e.g., She has a twin sister who may also enroll. He is very competitive and responds well to challenges...', '', false)}
+              <TextAreaField fieldKey="additional_notes" label="Anything else about your child's personality or needs we should know before Day 1?" placeholder="e.g., She has a twin sister who may also enroll. He is very competitive and responds well to challenges..." required={false} value={formData.additional_notes} error={errors.additional_notes} onChange={handleFieldChange} />
             </div>
           </section>
 
