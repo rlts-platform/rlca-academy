@@ -24,7 +24,26 @@ const BEHAVIOR_PATTERNS = [
 ];
 const CHARACTER_TRAITS = ['Integrity', 'Perseverance', 'Wisdom', 'Leadership', 'Stewardship', 'Courage', 'Compassion', 'Excellence'];
 
-// ─── Moved OUTSIDE parent component to prevent remount on every render ─────────
+// ─── Both helpers defined OUTSIDE to prevent remount/stale closure issues ──────
+function TextAreaField({ fieldKey, label, placeholder, hint, required = true, value, error, onChange }) {
+  return (
+    <div>
+      <Label className="mb-1.5 block text-sm font-semibold text-gray-700">
+        {label}{required && <span className="text-red-500 ml-1">*</span>}
+      </Label>
+      {hint && <p className="text-xs text-gray-500 mb-2">{hint}</p>}
+      <Textarea
+        value={value}
+        placeholder={placeholder}
+        rows={3}
+        onChange={e => onChange(fieldKey, e.target.value)}
+        className={error ? 'border-red-400' : ''}
+      />
+      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+    </div>
+  );
+}
+
 function CheckGrid({ label, stateKey, options, cols = 2, values, onToggle }) {
   return (
     <div>
