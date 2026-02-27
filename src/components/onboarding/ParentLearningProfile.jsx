@@ -177,8 +177,7 @@ export default function ParentLearningProfile({ data, onComplete, onBack }) {
           <section>
             <h3 className="text-base font-bold text-[#1B3A5C] mb-4 pb-2 border-b border-gray-100">Behavior, Social & Emotional Patterns</h3>
             <div className="space-y-5">
-              {renderTextArea('frustration_response', 'How does your child handle frustration when something is hard?',
-                'e.g., She tends to shut down and needs a short break. Once she resets she tries again...')}
+              <TextAreaField fieldKey="frustration_response" label="How does your child handle frustration when something is hard?" placeholder="e.g., She tends to shut down and needs a short break. Once she resets she tries again..." value={formData.frustration_response} error={errors.frustration_response} onChange={handleFieldChange} />
               <CheckGrid
                 label="My child generally:"
                 stateKey="behavior_patterns"
