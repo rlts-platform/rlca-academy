@@ -1,12 +1,11 @@
+// src/pages/StudentOnboarding.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { base44 } from '@/api/base44Client';
-import { useMutation } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, AlertCircle, RotateCcw, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
 import ProfileSwitcher from '@/components/ProfileSwitcher';
 import FamilyAccountSetup from '@/components/onboarding/FamilyAccountSetup';
 import StudentProfileForm from '@/components/onboarding/StudentProfileForm';
@@ -14,7 +13,7 @@ import ParentLearningProfile from '@/components/onboarding/ParentLearningProfile
 import PlacementTest from '@/components/onboarding/PlacementTest';
 import PlacementResults from '@/components/onboarding/PlacementResults';
 
-// ─── Step definitions (5 steps) ───────────────────────────────────────────────
+// ─── Step definitions ─────────────────────────────────────────────────────────
 const STEPS = [
   { num: 1, title: 'Family Setup',     short: 'Family'  },
   { num: 2, title: 'Student Profile',  short: 'Student' },
@@ -22,7 +21,6 @@ const STEPS = [
   { num: 4, title: 'Placement Test',   short: 'Test'    },
   { num: 5, title: 'Review & Submit',  short: 'Submit'  },
 ];
-
 const TOTAL_STEPS = STEPS.length;
 const LS_KEY = 'rlca_onboarding_v3';
 
@@ -58,10 +56,12 @@ function StepProgress({ currentStep }) {
         {STEPS.map((s, i) => (
           <React.Fragment key={s.num}>
             <div className="flex flex-col items-center">
-              <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all
-                ${currentStep > s.num ? 'bg-green-500 text-white' :
-                  currentStep === s.num ? 'text-white shadow-lg' : 'bg-gray-200 text-gray-400'}`}
-                style={currentStep === s.num ? { background: 'linear-gradient(135deg, #1B3A5C, #2a5485)' } : {}}>
+              <div
+                className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all
+                  ${currentStep > s.num ? 'bg-green-500 text-white' :
+                    currentStep === s.num ? 'text-white shadow-lg' : 'bg-gray-200 text-gray-400'}`}
+                style={currentStep === s.num ? { background: 'linear-gradient(135deg, #1B3A5C, #2a5485)' } : {}}
+              >
                 {currentStep > s.num ? <CheckCircle className="w-4 h-4" /> : s.num}
               </div>
               <span className={`text-xs mt-1.5 font-medium hidden sm:block
@@ -84,34 +84,46 @@ function StepProgress({ currentStep }) {
   );
 }
 
+// ─── Main component ───────────────────────────────────────────────────────────
 export default function StudentOnboarding() {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [appState, setAppState] = useState('loading');
-  const [activeChild, setActiveChild] = useState(null);
-  const [step, setStep] = useState(1);
-  const [data, setData] = useState(() => initialData());
-  const [error, setError] = useState(null);
+  const [currentUser, setCurrentUser]     = useState(null);
+  const [appState, setAppState]           = useState('loading');
+  const [activeChild, setActiveChild]     = useState(null);
+  const [step, setStep]                   = useState(1);
+  const [data, setData]                   = useState(() => initialData());
+  const [error, setError]                 = useState(null);
+  const [isSubmitting, setIsSubmitting]   = useState(false);
   const [hasSavedProgress, setHasSavedProgress] = useState(false);
 
-  useEffect(() => { bootstrap(); }, []);
+  // ── Bootstrap: load Supabase session ────────────────────────────────────────
+  useEffect(() => {
+    let mounted = true;
+    const bootstrap = async () => {
+      try {
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          window.location.href = '/GetStarted';
+          return;
+        }
+        if (!mounted) return;
+        setCurrentUser(user);
+        setData(initialData(user.email));
+        const saved = loadProgress();
+        if (saved) setHasSavedProgress(true);
+        setAppState('switcher');
+      } catch (err) {
+        console.error('[Onboarding bootstrap]', err);
+        if (mounted) {
+          setError('Failed to load. Please refresh.');
+          setAppState('switcher');
+        }
+      }
+    };
+    bootstrap();
+    return () => { mounted = false; };
+  }, []);
 
-  const bootstrap = async () => {
-    if (appState !== "loading") return; // prevent re-run
-    try {
-      const user = await base44.auth.me().catch(() => null);
-      if (!user) { window.location.href = '/GetStarted'; return; }
-      setCurrentUser(user);
-      setData(initialData(user.email));
-      const saved = loadProgress();
-      if (saved) setHasSavedProgress(true);
-      setAppState('switcher');
-    } catch (err) {
-      console.error('[Onboarding bootstrap]', err);
-      setError('Failed to load. Please refresh.');
-      setAppState('switcher');
-    }
-  };
-
+  // ── Local storage helpers ────────────────────────────────────────────────────
   const saveProgress = useCallback((stepNum, formData) => {
     try {
       localStorage.setItem(LS_KEY, JSON.stringify({ step: stepNum, data: formData, ts: Date.now() }));
@@ -123,18 +135,21 @@ export default function StudentOnboarding() {
       const raw = localStorage.getItem(LS_KEY);
       if (!raw) return null;
       const parsed = JSON.parse(raw);
-      if (Date.now() - parsed.ts > 7 * 24 * 3600 * 1000) { localStorage.removeItem(LS_KEY); return null; }
+      if (Date.now() - parsed.ts > 7 * 24 * 3600 * 1000) {
+        localStorage.removeItem(LS_KEY);
+        return null;
+      }
       return parsed;
     } catch { return null; }
   };
 
   const clearProgress = () => {
     localStorage.removeItem(LS_KEY);
-    // Also clear old key from previous version
     localStorage.removeItem('rlca_onboarding_v2');
     localStorage.removeItem('onboarding_progress');
   };
 
+  // ── Profile switcher handlers ────────────────────────────────────────────────
   const handleSelectChild = (child) => {
     sessionStorage.setItem('rlca_active_child', JSON.stringify(child));
     window.location.href = '/StudentDashboard';
@@ -156,10 +171,11 @@ export default function StudentOnboarding() {
   const handleEditChild = (child) => {
     setActiveChild(child);
     setData({ ...initialData(currentUser?.email || ''), ...child });
-    setStep(2); // Skip family setup, go to student profile
+    setStep(2);
     setAppState('onboarding');
   };
 
+  // ── Step navigation ──────────────────────────────────────────────────────────
   const handleStepComplete = (stepData) => {
     const updated = { ...data, ...stepData };
     setData(updated);
@@ -190,56 +206,198 @@ export default function StudentOnboarding() {
     setError(null);
   };
 
-  const submitMutation = useMutation({
-    mutationFn: async (finalData) => {
-      const onboardingRecord = await base44.entities.StudentOnboarding.create({
-        ...finalData,
-        parent_email: finalData.parent_email,
-        status: 'Submitted',
-      });
+  // ── Final submit to Supabase ─────────────────────────────────────────────────
+  const handleFinalSubmit = async (submissionData) => {
+    const finalData = { ...data, ...submissionData };
+    setData(finalData);
+    setIsSubmitting(true);
+    setError(null);
 
-      const existingParents = await base44.entities.Parent.filter({ email: finalData.parent_email }).catch(() => []);
-      if (existingParents.length === 0) {
-        await base44.entities.Parent.create({
-          full_name: finalData.parent_full_name,
-          email: finalData.parent_email,
-          phone: finalData.parent_phone || '',
-          address: `${finalData.street_address}, ${finalData.city}, ${finalData.state} ${finalData.zip}`,
+    try {
+      const userId = currentUser.id;
+
+      // 1. Update profile full name
+      const { error: profileErr } = await supabase
+        .from('profiles')
+        .update({ full_name: finalData.parent_full_name, onboarding_step: 5 })
+        .eq('id', userId);
+      if (profileErr) throw profileErr;
+
+      // 2. Upsert family record
+      let familyId = null;
+      const { data: existingFamily } = await supabase
+        .from('families')
+        .select('id')
+        .eq('parent_id', userId)
+        .single();
+
+      if (existingFamily) {
+        familyId = existingFamily.id;
+        await supabase.from('families').update({
+          family_name:       `${finalData.parent_full_name}'s Family`,
+          parent_phone:      finalData.parent_phone || null,
+          parent2_full_name: finalData.parent2_full_name || null,
+          parent2_email:     finalData.parent2_email || null,
+          parent2_phone:     finalData.parent2_phone || null,
+          street_address:    finalData.street_address || null,
+          city:              finalData.city || null,
+          state:             finalData.state || null,
+          zip:               finalData.zip || null,
+          homeschool_status: finalData.homeschool_status || null,
+          heard_about_rlca:  finalData.heard_about_rlca || null,
+          faith_background:  finalData.faith_background || null,
+          commitments:       finalData.commitments || [],
+        }).eq('id', familyId);
+      } else {
+        const { data: newFamily, error: familyErr } = await supabase
+          .from('families')
+          .insert({
+            parent_id:         userId,
+            family_name:       `${finalData.parent_full_name}'s Family`,
+            parent_phone:      finalData.parent_phone || null,
+            parent2_full_name: finalData.parent2_full_name || null,
+            parent2_email:     finalData.parent2_email || null,
+            parent2_phone:     finalData.parent2_phone || null,
+            street_address:    finalData.street_address || null,
+            city:              finalData.city || null,
+            state:             finalData.state || null,
+            zip:               finalData.zip || null,
+            homeschool_status: finalData.homeschool_status || null,
+            heard_about_rlca:  finalData.heard_about_rlca || null,
+            faith_background:  finalData.faith_background || null,
+            commitments:       finalData.commitments || [],
+          })
+          .select()
+          .single();
+        if (familyErr) throw familyErr;
+        familyId = newFamily.id;
+
+        // Upsert subscription tier based on child count (1 child at this point)
+        await supabase.from('subscriptions').insert({
+          family_id:     familyId,
+          tier:          'starter',
+          status:        'pending',
+          price_monthly: 15,
+          max_children:  1,
         });
       }
 
-      await base44.entities.Student.create({
-        full_name: `${finalData.legal_first_name} ${finalData.legal_last_name}`,
-        age: finalData.age,
-        grade_level: finalData.age_estimate_grade,
-        parent_email: finalData.parent_email,
-        enrollment_status: 'Pending Review',
-        placement_level: finalData.placement_scores
-          ? Object.values(finalData.placement_scores)
-              .filter(s => s && s.level && s.level !== 'To be reviewed')
-              .map(s => s.level)[0] || 'Developing'
-          : 'Developing',
-      });
+      // 3. Create or update child record
+      const initials = `${finalData.legal_first_name?.[0] || ''}${finalData.legal_last_name?.[0] || ''}`.toUpperCase();
 
-      return onboardingRecord;
-    },
-    onSuccess: () => {
+      let childId = activeChild?.id || null;
+
+      if (childId) {
+        // Editing existing child
+        const { error: childErr } = await supabase.from('children').update({
+          full_name:          `${finalData.legal_first_name} ${finalData.legal_last_name}`,
+          preferred_name:     finalData.preferred_nickname || null,
+          date_of_birth:      finalData.date_of_birth || null,
+          grade_level:        finalData.age_estimate_grade || null,
+          avatar_initials:    initials,
+          placement_scores:   finalData.placement_scores || null,
+          placement_answers:  finalData.placement_answers || null,
+          agreements:         finalData.agreements || null,
+          digital_signature:  finalData.digital_signature || null,
+          status:             'Submitted',
+          enrollment_status:  'Pending Review',
+          submitted_at:       new Date().toISOString(),
+        }).eq('id', childId);
+        if (childErr) throw childErr;
+      } else {
+        // New child
+        const { data: newChild, error: childErr } = await supabase
+          .from('children')
+          .insert({
+            family_id:         familyId,
+            full_name:         `${finalData.legal_first_name} ${finalData.legal_last_name}`,
+            preferred_name:    finalData.preferred_nickname || null,
+            date_of_birth:     finalData.date_of_birth || null,
+            grade_level:       finalData.age_estimate_grade || null,
+            avatar_initials:   initials,
+            placement_scores:  finalData.placement_scores || null,
+            placement_answers: finalData.placement_answers || null,
+            agreements:        finalData.agreements || null,
+            digital_signature: finalData.digital_signature || null,
+            status:            'Submitted',
+            enrollment_status: 'Pending Review',
+            submitted_at:      new Date().toISOString(),
+          })
+          .select()
+          .single();
+        if (childErr) throw childErr;
+        childId = newChild.id;
+
+        // Update subscription max_children count
+        const { data: childCount } = await supabase
+          .from('children')
+          .select('id', { count: 'exact' })
+          .eq('family_id', familyId);
+        const count = childCount?.length || 1;
+        const tier =
+          count <= 2  ? { tier: 'starter',      price: 15 } :
+          count <= 5  ? { tier: 'family',        price: 30 } :
+          count <= 10 ? { tier: 'large_family',  price: 50 } :
+                        { tier: 'custom',        price: null };
+        await supabase.from('subscriptions')
+          .update({ tier: tier.tier, price_monthly: tier.price, max_children: count })
+          .eq('family_id', familyId);
+      }
+
+      // 4. Upsert learning profile
+      const { data: existingLP } = await supabase
+        .from('learning_profiles')
+        .select('id')
+        .eq('child_id', childId)
+        .single();
+
+      const lpPayload = {
+        child_id:                childId,
+        learning_style:          finalData.learning_preferences || [],
+        interests:               finalData.interests || [],
+        learning_success_story:  finalData.learning_success_story || null,
+        learning_struggle_story: finalData.learning_struggle_story || null,
+        academic_strengths:      finalData.academic_strengths || null,
+        academic_challenges:     finalData.academic_challenges || null,
+        struggle_areas:          finalData.struggle_areas || [],
+        behavior_patterns:       finalData.behavior_patterns || [],
+        frustration_response:    finalData.frustration_response || null,
+        additional_notes:        finalData.additional_notes || null,
+        preferred_pace:          finalData.preferred_pace || 'Average',
+        schedule_type:           finalData.schedule_type || 'Full-Time',
+        biblical_studies:        finalData.biblical_studies ?? true,
+        character_focus:         finalData.character_focus || [],
+        technology_access:       finalData.technology_access || {},
+        homeschooled_before:     finalData.homeschooled_before || false,
+        extracurricular_interests: finalData.extracurricular_interests || [],
+        language_learning:       finalData.language_learning || [],
+        special_needs:           finalData.special_needs || [],
+        special_needs_details:   finalData.special_needs_details || null,
+      };
+
+      if (existingLP) {
+        await supabase.from('learning_profiles').update(lpPayload).eq('id', existingLP.id);
+      } else {
+        await supabase.from('learning_profiles').insert(lpPayload);
+      }
+
+      // 5. Mark onboarding complete on profile
+      await supabase
+        .from('profiles')
+        .update({ onboarding_complete: true, onboarding_step: 5 })
+        .eq('id', userId);
+
       clearProgress();
       setAppState('success');
-    },
-    onError: (err) => {
+    } catch (err) {
       console.error('[Onboarding submit error]', err);
       setError('Submission failed. Please try again or contact RLCA directly.');
-    },
-  });
-
-  const handleFinalSubmit = (submissionData) => {
-    const finalData = { ...data, ...submissionData };
-    setData(finalData);
-    submitMutation.mutate(finalData);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // ── Loading ────────────────────────────────────────────────────────────────
+  // ── Loading ──────────────────────────────────────────────────────────────────
   if (appState === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center"
@@ -252,7 +410,7 @@ export default function StudentOnboarding() {
     );
   }
 
-  // ── Profile switcher ───────────────────────────────────────────────────────
+  // ── Profile switcher ─────────────────────────────────────────────────────────
   if (appState === 'switcher') {
     return (
       <ProfileSwitcher
@@ -264,7 +422,7 @@ export default function StudentOnboarding() {
     );
   }
 
-  // ── Success ────────────────────────────────────────────────────────────────
+  // ── Success ──────────────────────────────────────────────────────────────────
   if (appState === 'success') {
     return (
       <div className="min-h-screen flex items-center justify-center px-6"
@@ -275,13 +433,18 @@ export default function StudentOnboarding() {
             <CheckCircle className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-3">Application Submitted!</h1>
-          <p className="text-gray-300 mb-2">Welcome to Royal Legends Children Academy, {data.legal_first_name}!</p>
+          <p className="text-gray-300 mb-2">
+            Welcome to Royal Legends Children Academy, {data.legal_first_name}!
+          </p>
           <p className="text-gray-400 text-sm mb-8">
             RLCA will review and respond within 5 business days at{' '}
             <strong className="text-white">{data.parent_email}</strong>.
           </p>
-          <Button onClick={() => setAppState('switcher')} className="text-white px-8"
-            style={{ background: 'linear-gradient(135deg, #C5972B, #a07820)' }}>
+          <Button
+            onClick={() => setAppState('switcher')}
+            className="text-white px-8"
+            style={{ background: 'linear-gradient(135deg, #C5972B, #a07820)' }}
+          >
             Return to Profiles
           </Button>
         </motion.div>
@@ -289,11 +452,10 @@ export default function StudentOnboarding() {
     );
   }
 
-  // ── Onboarding flow ────────────────────────────────────────────────────────
+  // ── Onboarding flow ──────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen py-8 px-4" style={{ backgroundColor: '#f8fafc' }}>
       <div className="max-w-3xl mx-auto">
-
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#1B3A5C' }}>
@@ -301,7 +463,9 @@ export default function StudentOnboarding() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">RLCA Academy</h1>
-              <p className="text-gray-500 text-sm">Student Enrollment — {activeChild ? 'Edit Profile' : 'New Child'}</p>
+              <p className="text-gray-500 text-sm">
+                Student Enrollment — {activeChild ? 'Edit Profile' : 'New Child'}
+              </p>
             </div>
           </div>
           <Button variant="ghost" size="sm" onClick={restartOnboarding}
@@ -320,33 +484,36 @@ export default function StudentOnboarding() {
         {hasSavedProgress && step > 1 && (
           <Alert className="mb-4 border-blue-200 bg-blue-50">
             <CheckCircle className="w-4 h-4 text-blue-500" />
-            <AlertDescription className="text-blue-700">Progress restored — continuing where you left off.</AlertDescription>
+            <AlertDescription className="text-blue-700">
+              Progress restored — continuing where you left off.
+            </AlertDescription>
           </Alert>
         )}
 
         <StepProgress currentStep={step} />
 
         <AnimatePresence mode="wait">
-          <motion.div key={step}
+          <motion.div
+            key={step}
             initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -24 }}
-            transition={{ duration: 0.2 }}>
-            {step === 1 && <FamilyAccountSetup data={data} onComplete={handleStepComplete} onBack={handleBack} />}
-            {step === 2 && <StudentProfileForm data={data} onComplete={handleStepComplete} onBack={handleBack} />}
+            transition={{ duration: 0.2 }}
+          >
+            {step === 1 && <FamilyAccountSetup  data={data} onComplete={handleStepComplete} onBack={handleBack} />}
+            {step === 2 && <StudentProfileForm  data={data} onComplete={handleStepComplete} onBack={handleBack} />}
             {step === 3 && <ParentLearningProfile data={data} onComplete={handleStepComplete} onBack={handleBack} />}
-            {step === 4 && <PlacementTest data={data} onComplete={handleStepComplete} onBack={handleBack} />}
+            {step === 4 && <PlacementTest       data={data} onComplete={handleStepComplete} onBack={handleBack} />}
             {step === 5 && (
               <PlacementResults
                 data={data}
                 onComplete={handleFinalSubmit}
                 onBack={handleBack}
-                isSubmitting={submitMutation.isPending}
+                isSubmitting={isSubmitting}
               />
             )}
           </motion.div>
         </AnimatePresence>
-
       </div>
     </div>
   );
