@@ -30,6 +30,25 @@ const HOMESCHOOL_OPTIONS = [
   { value: 'needs_guidance', label: 'Not yet — need guidance', desc: 'We need help understanding the process in our state.' },
 ];
 
+// DEFINED OUTSIDE — never remounts on parent re-render, no focus loss
+function Field({ fieldKey, label, type, placeholder, required, value, error, onChange }) {
+  return (
+    <div>
+      <Label className="mb-1.5 block text-sm font-semibold text-gray-700">
+        {label}{required && <span className="text-red-500 ml-1">*</span>}
+      </Label>
+      <Input
+        type={type || 'text'}
+        value={value}
+        placeholder={placeholder || ''}
+        onChange={e => onChange(fieldKey, e.target.value)}
+        className={error ? 'border-red-400' : ''}
+      />
+      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+    </div>
+  );
+}
+
 export default function FamilyAccountSetup({ data, onComplete, onBack }) {
   const [formData, setFormData] = useState({
     parent_full_name:  data.parent_full_name  || '',
@@ -54,13 +73,11 @@ export default function FamilyAccountSetup({ data, onComplete, onBack }) {
     setErrors(prev => ({ ...prev, [key]: '' }));
   };
 
-  // ── Single handler, no double-firing ────────────────────────────────────────
   const toggleCommitment = (id) => {
     setFormData(prev => {
-      const current = prev.commitments;
-      const updated = current.includes(id)
-        ? current.filter(c => c !== id)
-        : [...current, id];
+      const updated = prev.commitments.includes(id)
+        ? prev.commitments.filter(c => c !== id)
+        : [...prev.commitments, id];
       return { ...prev, commitments: updated };
     });
   };
@@ -85,22 +102,6 @@ export default function FamilyAccountSetup({ data, onComplete, onBack }) {
     onComplete(formData);
   };
 
-  const Field = ({ fieldKey, label, type = 'text', placeholder = '', required = true }) => (
-    <div>
-      <Label className="mb-1.5 block text-sm font-semibold text-gray-700">
-        {label}{required && <span className="text-red-500 ml-1">*</span>}
-      </Label>
-      <Input
-        type={type}
-        value={formData[fieldKey]}
-        placeholder={placeholder}
-        onChange={e => set(fieldKey, e.target.value)}
-        className={errors[fieldKey] ? 'border-red-400' : ''}
-      />
-      {errors[fieldKey] && <p className="text-red-500 text-xs mt-1">{errors[fieldKey]}</p>}
-    </div>
-  );
-
   return (
     <Card className="shadow-xl border-0">
       <CardHeader className="rounded-t-xl pb-4" style={{ background: 'linear-gradient(135deg, #1B3A5C, #2a5485)' }}>
@@ -118,21 +119,17 @@ export default function FamilyAccountSetup({ data, onComplete, onBack }) {
       <CardContent className="p-6">
         <form onSubmit={handleSubmit} className="space-y-8">
 
-          {/* Primary Parent */}
           <section>
-            <h3 className="text-base font-bold text-[#1B3A5C] mb-4 pb-2 border-b border-gray-100">
-              Primary Parent / Guardian
-            </h3>
+            <h3 className="text-base font-bold text-[#1B3A5C] mb-4 pb-2 border-b border-gray-100">Primary Parent / Guardian</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <Field fieldKey="parent_full_name" label="Full Legal Name" placeholder="Jane Smith" />
+                <Field fieldKey="parent_full_name" label="Full Legal Name" placeholder="Jane Smith" required value={formData.parent_full_name} error={errors.parent_full_name} onChange={set} />
               </div>
-              <Field fieldKey="parent_email" label="Email Address" type="email" placeholder="jane@example.com" />
-              <Field fieldKey="parent_phone" label="Phone Number" type="tel" placeholder="(555) 123-4567" required={false} />
+              <Field fieldKey="parent_email" label="Email Address" type="email" placeholder="jane@example.com" required value={formData.parent_email} error={errors.parent_email} onChange={set} />
+              <Field fieldKey="parent_phone" label="Phone Number" type="tel" placeholder="(555) 123-4567" required={false} value={formData.parent_phone} error={errors.parent_phone} onChange={set} />
             </div>
           </section>
 
-          {/* Secondary Parent */}
           <section>
             <h3 className="text-base font-bold text-[#1B3A5C] mb-1 pb-2 border-b border-gray-100">
               Secondary Parent / Guardian <span className="font-normal text-gray-400 text-sm">(optional)</span>
@@ -140,26 +137,23 @@ export default function FamilyAccountSetup({ data, onComplete, onBack }) {
             <p className="text-xs text-gray-500 mb-4">Add a second parent or guardian for communications.</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <Field fieldKey="parent2_full_name" label="Full Legal Name" placeholder="John Smith" required={false} />
+                <Field fieldKey="parent2_full_name" label="Full Legal Name" placeholder="John Smith" required={false} value={formData.parent2_full_name} error={errors.parent2_full_name} onChange={set} />
               </div>
-              <Field fieldKey="parent2_email" label="Email Address" type="email" placeholder="john@example.com" required={false} />
-              <Field fieldKey="parent2_phone" label="Phone Number" type="tel" placeholder="(555) 987-6543" required={false} />
+              <Field fieldKey="parent2_email" label="Email Address" type="email" placeholder="john@example.com" required={false} value={formData.parent2_email} error={errors.parent2_email} onChange={set} />
+              <Field fieldKey="parent2_phone" label="Phone Number" type="tel" placeholder="(555) 987-6543" required={false} value={formData.parent2_phone} error={errors.parent2_phone} onChange={set} />
             </div>
           </section>
 
-          {/* Home Address */}
           <section>
             <h3 className="text-base font-bold text-[#1B3A5C] mb-4 pb-2 border-b border-gray-100 flex items-center gap-2">
               <Home className="w-4 h-4" /> Home Address
             </h3>
             <div className="grid grid-cols-1 gap-4">
-              <Field fieldKey="street_address" label="Street Address" placeholder="123 Main St" />
+              <Field fieldKey="street_address" label="Street Address" placeholder="123 Main St" required value={formData.street_address} error={errors.street_address} onChange={set} />
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <Field fieldKey="city" label="City" placeholder="Springfield" />
+                <Field fieldKey="city" label="City" placeholder="Springfield" required value={formData.city} error={errors.city} onChange={set} />
                 <div>
-                  <Label className="mb-1.5 block text-sm font-semibold text-gray-700">
-                    State <span className="text-red-500">*</span>
-                  </Label>
+                  <Label className="mb-1.5 block text-sm font-semibold text-gray-700">State <span className="text-red-500">*</span></Label>
                   <Select value={formData.state} onValueChange={v => set('state', v)}>
                     <SelectTrigger className={errors.state ? 'border-red-400' : ''}>
                       <SelectValue placeholder="State" />
@@ -170,28 +164,20 @@ export default function FamilyAccountSetup({ data, onComplete, onBack }) {
                   </Select>
                   {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
                 </div>
-                <Field fieldKey="zip" label="ZIP Code" placeholder="62701" />
+                <Field fieldKey="zip" label="ZIP Code" placeholder="62701" required value={formData.zip} error={errors.zip} onChange={set} />
               </div>
             </div>
           </section>
 
-          {/* Homeschool Status — onValueChange only, no onClick on div */}
           <section>
             <h3 className="text-base font-bold text-[#1B3A5C] mb-4 pb-2 border-b border-gray-100">
               Homeschool Status <span className="text-red-500">*</span>
             </h3>
-            <RadioGroup
-              value={formData.homeschool_status}
-              onValueChange={v => set('homeschool_status', v)}
-              className="space-y-3"
-            >
+            <RadioGroup value={formData.homeschool_status} onValueChange={v => set('homeschool_status', v)} className="space-y-3">
               {HOMESCHOOL_OPTIONS.map(opt => (
                 <div key={opt.value}
                   className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all
-                    ${formData.homeschool_status === opt.value
-                      ? 'border-[#1B3A5C] bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'}`}
-                >
+                    ${formData.homeschool_status === opt.value ? 'border-[#1B3A5C] bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
                   <RadioGroupItem value={opt.value} className="mt-0.5" />
                   <div>
                     <p className="font-semibold text-gray-900 text-sm">{opt.label}</p>
@@ -200,24 +186,16 @@ export default function FamilyAccountSetup({ data, onComplete, onBack }) {
                 </div>
               ))}
             </RadioGroup>
-            {errors.homeschool_status && (
-              <p className="text-red-500 text-xs mt-2">{errors.homeschool_status}</p>
-            )}
-            <p className="text-xs text-gray-400 mt-3 italic">
-              RLCA operates as a hybrid co-op. Families must maintain legal homeschool status.
-            </p>
+            {errors.homeschool_status && <p className="text-red-500 text-xs mt-2">{errors.homeschool_status}</p>}
+            <p className="text-xs text-gray-400 mt-3 italic">RLCA operates as a hybrid co-op. Families must maintain legal homeschool status.</p>
           </section>
 
-          {/* Faith */}
           <section>
-            <h3 className="text-base font-bold text-[#1B3A5C] mb-4 pb-2 border-b border-gray-100">
-              Faith Foundation
-            </h3>
+            <h3 className="text-base font-bold text-[#1B3A5C] mb-4 pb-2 border-b border-gray-100">Faith Foundation</h3>
             <div className="space-y-5">
               <div>
                 <Label className="mb-1.5 block text-sm font-semibold text-gray-700">
-                  Briefly describe your family's faith background{' '}
-                  <span className="text-gray-400 font-normal">(optional)</span>
+                  Briefly describe your family's faith background <span className="text-gray-400 font-normal">(optional)</span>
                 </Label>
                 <Textarea
                   value={formData.faith_background}
@@ -226,23 +204,18 @@ export default function FamilyAccountSetup({ data, onComplete, onBack }) {
                   onChange={e => set('faith_background', e.target.value)}
                 />
               </div>
-
-              {/* Commitments — onClick on div only, no onCheckedChange */}
               <div>
                 <Label className="mb-3 block text-sm font-semibold text-gray-700">
-                  Our family commits to:{' '}
-                  <span className="text-gray-400 font-normal">(optional)</span>
+                  Our family commits to: <span className="text-gray-400 font-normal">(optional)</span>
                 </Label>
                 <div className="space-y-2">
                   {COMMITMENTS.map(c => {
                     const checked = formData.commitments.includes(c.id);
                     return (
-                      <div
-                        key={c.id}
+                      <div key={c.id}
                         className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all
                           ${checked ? 'border-[#1B3A5C] bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
-                        onClick={() => toggleCommitment(c.id)}
-                      >
+                        onClick={() => toggleCommitment(c.id)}>
                         <Checkbox checked={checked} readOnly />
                         <p className="text-sm text-gray-800">{c.label}</p>
                       </div>
@@ -253,15 +226,10 @@ export default function FamilyAccountSetup({ data, onComplete, onBack }) {
             </div>
           </section>
 
-          {/* How did you hear */}
           <section>
-            <Label className="mb-1.5 block text-sm font-semibold text-gray-700">
-              How did you hear about RLCA?
-            </Label>
+            <Label className="mb-1.5 block text-sm font-semibold text-gray-700">How did you hear about RLCA?</Label>
             <Select value={formData.heard_about_rlca} onValueChange={v => set('heard_about_rlca', v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select one (optional)" />
-              </SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Select one (optional)" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="word_of_mouth">Word of mouth / personal referral</SelectItem>
                 <SelectItem value="church">Church network or pastor referral</SelectItem>
@@ -274,11 +242,7 @@ export default function FamilyAccountSetup({ data, onComplete, onBack }) {
 
           <div className="flex justify-between pt-2">
             <Button type="button" variant="outline" onClick={onBack}>Back</Button>
-            <Button
-              type="submit"
-              style={{ background: 'linear-gradient(135deg, #1B3A5C, #2a5485)' }}
-              className="text-white px-8"
-            >
+            <Button type="submit" style={{ background: 'linear-gradient(135deg, #1B3A5C, #2a5485)' }} className="text-white px-8">
               Continue →
             </Button>
           </div>
