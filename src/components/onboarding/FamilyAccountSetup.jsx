@@ -250,4 +250,4 @@ export default function FamilyAccountSetup({ data, onComplete, onBack }) {
       </CardContent>
     </Card>
   );
-}
+} 
