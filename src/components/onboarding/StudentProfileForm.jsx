@@ -99,7 +99,7 @@ export default function StudentProfileForm({ data, onComplete, onBack }) {
                 ${checked ? 'border-[#1B3A5C] bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
               onClick={() => toggle(stateKey, opt)}
             >
-              <Checkbox checked={checked} onCheckedChange={() => toggle(stateKey, opt)} />
+              <Checkbox checked={checked} onCheckedChange={() => toggle(stateKey, opt)} className="pointer-events-none" />
               <span className="leading-snug">{opt}</span>
             </div>
           );

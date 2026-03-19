@@ -216,7 +216,7 @@ export default function FamilyAccountSetup({ data, onComplete, onBack }) {
                         className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all
                           ${checked ? 'border-[#1B3A5C] bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
                         onClick={() => toggleCommitment(c.id)}>
-                        <Checkbox checked={checked} readOnly />
+                        <Checkbox checked={checked} readOnly className="pointer-events-none" />
                         <p className="text-sm text-gray-800">{c.label}</p>
                       </div>
                     );
@@ -250,4 +250,4 @@ export default function FamilyAccountSetup({ data, onComplete, onBack }) {
       </CardContent>
     </Card>
   );
-} 
+}
