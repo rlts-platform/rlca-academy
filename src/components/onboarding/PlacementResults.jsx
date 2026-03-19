@@ -75,8 +75,13 @@ export default function PlacementResults({ data, onComplete, onBack, isSubmittin
   };
 
   const handleSubmit = () => {
+    console.log('[PlacementResults] submitting', agreements, signature);
     const errs = validate();
-    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      console.error('[PlacementResults] Validation failed:', errs);
+      return;
+    }
     onComplete({
       agreements,
       digital_signature: signature.trim(),
@@ -184,7 +189,11 @@ export default function PlacementResults({ data, onComplete, onBack, isSubmittin
               );
             })}
           </div>
-          {errors.agreements && <p className="text-red-500 text-sm mb-4">{errors.agreements}</p>}
+          {errors.agreements && (
+            <div className="p-3 mb-4 bg-red-50 border-2 border-red-400 rounded-lg">
+              <p className="text-red-700 text-sm font-semibold">{errors.agreements}</p>
+            </div>
+          )}
 
           {/* Digital signature */}
           <div className="p-4 rounded-xl border-2 border-[#C5972B] bg-amber-50 mb-6">
