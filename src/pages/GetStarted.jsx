@@ -29,6 +29,11 @@ export default function GetStarted() {
         options: { data: { full_name: fullName, role: 'parent' } },
       });
       if (signUpError) throw signUpError;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        sessionStorage.setItem('sb_access_token', session.access_token);
+        sessionStorage.setItem('sb_refresh_token', session.refresh_token);
+      }
       window.location.href = '/StudentOnboarding';
     } catch (err) {
       setError(err.message || 'Sign up failed. Please try again.');
@@ -44,6 +49,11 @@ export default function GetStarted() {
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
       if (signInError) throw signInError;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        sessionStorage.setItem('sb_access_token', session.access_token);
+        sessionStorage.setItem('sb_refresh_token', session.refresh_token);
+      }
       window.location.href = '/StudentOnboarding';
     } catch (err) {
       setError(err.message || 'Sign in failed. Please check your credentials.');
