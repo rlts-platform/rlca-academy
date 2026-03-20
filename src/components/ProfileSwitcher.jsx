@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Pencil, BookOpen } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { base44 } from '@/api/base44Client';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const MAX_CHILDREN_PER_PARENT = 10;
@@ -130,30 +130,9 @@ export default function ProfileSwitcher({ currentUser, onSelectChild, onAddChild
     setLoading(true);
     setError(null);
     try {
-      // Get family for this parent
-      const { data: family, error: familyErr } = await supabase
-        .from('families')
-        .select('id')
-        .eq('parent_id', currentUser.id)
-        .single();
-
-      if (familyErr && familyErr.code !== 'PGRST116') throw familyErr;
-
-      if (!family) {
-        setChildren([]);
-        setLoading(false);
-        return;
-      }
-
-      // Get children for this family
-      const { data: kids, error: kidsErr } = await supabase
-        .from('children')
-        .select('*')
-        .eq('family_id', family.id)
-        .order('created_at', { ascending: true });
-
-      if (kidsErr) throw kidsErr;
-      setChildren(kids || []);
+      // Get students for this parent
+      const students = await base44.entities.Student.filter({ parent_email: currentUser.email });
+      setChildren(students || []);
     } catch (err) {
       console.error('[ProfileSwitcher] load error', err);
       setError('Failed to load profiles. Please refresh.');

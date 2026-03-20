@@ -1,6 +1,6 @@
 // src/pages/StudentOnboarding.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
+import { base44 } from '@/api/base44Client';
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -95,15 +95,14 @@ export default function StudentOnboarding() {
   const [isSubmitting, setIsSubmitting]   = useState(false);
   const [hasSavedProgress, setHasSavedProgress] = useState(false);
 
-  // ── Bootstrap: load Supabase session ────────────────────────────────────────
+  // ── Bootstrap: load base44 auth ────────────────────────────────────────
   useEffect(() => {
     let mounted = true;
     const bootstrap = async () => {
       try {
-        const { data: { session }, error: authError } = await supabase.auth.getSession();
-        const user = session?.user;
-        if (authError || !user) {
-          window.location.href = '/GetStarted';
+        const user = await base44.auth.me();
+        if (!user) {
+          base44.auth.redirectToLogin();
           return;
         }
         if (!mounted) return;
@@ -207,7 +206,7 @@ export default function StudentOnboarding() {
     setError(null);
   };
 
-  // ── Final submit to Supabase ─────────────────────────────────────────────────
+  // ── Final submit using base44 ─────────────────────────────────────────────────
   const handleFinalSubmit = async (submissionData) => {
     const finalData = { ...data, ...submissionData };
     setData(finalData);
@@ -215,178 +214,47 @@ export default function StudentOnboarding() {
     setError(null);
 
     try {
-      const userId = currentUser.id;
+      // Create Student record
+      await base44.entities.Student.create({
+        full_name: `${finalData.legal_first_name} ${finalData.legal_last_name}`,
+        age: finalData.age,
+        grade_level: finalData.age_estimate_grade,
+        parent_email: currentUser.email,
+        enrollment_status: 'Active',
+        student_email: null,
+        profile_image: null,
+        learning_plan_notes: finalData.additional_notes || null,
+      });
 
-      // 1. Update profile full name
-      const { error: profileErr } = await supabase
-        .from('profiles')
-        .update({ full_name: finalData.parent_full_name, onboarding_step: 5 })
-        .eq('id', userId);
-      if (profileErr) throw profileErr;
-
-      // 2. Upsert family record
-      let familyId = null;
-      const { data: existingFamily } = await supabase
-        .from('families')
-        .select('id')
-        .eq('parent_id', userId)
-        .single();
-
-      if (existingFamily) {
-        familyId = existingFamily.id;
-        await supabase.from('families').update({
-          family_name:       `${finalData.parent_full_name}'s Family`,
-          parent_phone:      finalData.parent_phone || null,
-          parent2_full_name: finalData.parent2_full_name || null,
-          parent2_email:     finalData.parent2_email || null,
-          parent2_phone:     finalData.parent2_phone || null,
-          street_address:    finalData.street_address || null,
-          city:              finalData.city || null,
-          state:             finalData.state || null,
-          zip:               finalData.zip || null,
-          homeschool_status: finalData.homeschool_status || null,
-          heard_about_rlca:  finalData.heard_about_rlca || null,
-          faith_background:  finalData.faith_background || null,
-          commitments:       finalData.commitments || [],
-        }).eq('id', familyId);
-      } else {
-        const { data: newFamily, error: familyErr } = await supabase
-          .from('families')
-          .insert({
-            parent_id:         userId,
-            family_name:       `${finalData.parent_full_name}'s Family`,
-            parent_phone:      finalData.parent_phone || null,
-            parent2_full_name: finalData.parent2_full_name || null,
-            parent2_email:     finalData.parent2_email || null,
-            parent2_phone:     finalData.parent2_phone || null,
-            street_address:    finalData.street_address || null,
-            city:              finalData.city || null,
-            state:             finalData.state || null,
-            zip:               finalData.zip || null,
-            homeschool_status: finalData.homeschool_status || null,
-            heard_about_rlca:  finalData.heard_about_rlca || null,
-            faith_background:  finalData.faith_background || null,
-            commitments:       finalData.commitments || [],
-          })
-          .select()
-          .single();
-        if (familyErr) throw familyErr;
-        familyId = newFamily.id;
-
-        // Upsert subscription tier based on child count (1 child at this point)
-        await supabase.from('subscriptions').insert({
-          family_id:     familyId,
-          tier:          'starter',
-          status:        'pending',
-          price_monthly: 15,
-          max_children:  1,
-        });
-      }
-
-      // 3. Create or update child record
-      const initials = `${finalData.legal_first_name?.[0] || ''}${finalData.legal_last_name?.[0] || ''}`.toUpperCase();
-
-      let childId = activeChild?.id || null;
-
-      if (childId) {
-        // Editing existing child
-        const { error: childErr } = await supabase.from('children').update({
-          full_name:          `${finalData.legal_first_name} ${finalData.legal_last_name}`,
-          preferred_name:     finalData.preferred_nickname || null,
-          date_of_birth:      finalData.date_of_birth || null,
-          grade_level:        finalData.age_estimate_grade || null,
-          avatar_initials:    initials,
-          placement_scores:   finalData.placement_scores || null,
-          placement_answers:  finalData.placement_answers || null,
-          agreements:         finalData.agreements || null,
-          digital_signature:  finalData.digital_signature || null,
-          status:             'Submitted',
-          enrollment_status:  'Pending Review',
-          submitted_at:       new Date().toISOString(),
-        }).eq('id', childId);
-        if (childErr) throw childErr;
-      } else {
-        // New child
-        const { data: newChild, error: childErr } = await supabase
-          .from('children')
-          .insert({
-            family_id:         familyId,
-            full_name:         `${finalData.legal_first_name} ${finalData.legal_last_name}`,
-            preferred_name:    finalData.preferred_nickname || null,
-            date_of_birth:     finalData.date_of_birth || null,
-            grade_level:       finalData.age_estimate_grade || null,
-            avatar_initials:   initials,
-            placement_scores:  finalData.placement_scores || null,
-            placement_answers: finalData.placement_answers || null,
-            agreements:        finalData.agreements || null,
-            digital_signature: finalData.digital_signature || null,
-            status:            'Submitted',
-            enrollment_status: 'Pending Review',
-            submitted_at:      new Date().toISOString(),
-          })
-          .select()
-          .single();
-        if (childErr) throw childErr;
-        childId = newChild.id;
-
-        // Update subscription max_children count
-        const { data: childCount } = await supabase
-          .from('children')
-          .select('id', { count: 'exact' })
-          .eq('family_id', familyId);
-        const count = childCount?.length || 1;
-        const tier =
-          count <= 2  ? { tier: 'starter',      price: 15 } :
-          count <= 5  ? { tier: 'family',        price: 30 } :
-          count <= 10 ? { tier: 'large_family',  price: 50 } :
-                        { tier: 'custom',        price: null };
-        await supabase.from('subscriptions')
-          .update({ tier: tier.tier, price_monthly: tier.price, max_children: count })
-          .eq('family_id', familyId);
-      }
-
-      // 4. Upsert learning profile
-      const { data: existingLP } = await supabase
-        .from('learning_profiles')
-        .select('id')
-        .eq('child_id', childId)
-        .single();
-
-      const lpPayload = {
-        child_id:                childId,
-        learning_style:          finalData.learning_preferences || [],
-        interests:               finalData.interests || [],
-        learning_success_story:  finalData.learning_success_story || null,
-        learning_struggle_story: finalData.learning_struggle_story || null,
-        academic_strengths:      finalData.academic_strengths || null,
-        academic_challenges:     finalData.academic_challenges || null,
-        struggle_areas:          finalData.struggle_areas || [],
-        behavior_patterns:       finalData.behavior_patterns || [],
-        frustration_response:    finalData.frustration_response || null,
-        additional_notes:        finalData.additional_notes || null,
-        preferred_pace:          finalData.preferred_pace || 'Average',
-        schedule_type:           finalData.schedule_type || 'Full-Time',
-        biblical_studies:        finalData.biblical_studies ?? true,
-        character_focus:         finalData.character_focus || [],
-        technology_access:       finalData.technology_access || {},
-        homeschooled_before:     finalData.homeschooled_before || false,
+      // Create StudentOnboarding record
+      await base44.entities.StudentOnboarding.create({
+        legal_first_name: finalData.legal_first_name,
+        legal_last_name: finalData.legal_last_name,
+        preferred_nickname: finalData.preferred_nickname || null,
+        date_of_birth: finalData.date_of_birth,
+        age: finalData.age,
+        gender: finalData.gender || null,
+        parent_email: currentUser.email,
+        parent_full_name: finalData.parent_full_name,
+        parent_phone: finalData.parent_phone || null,
+        learning_preferences: finalData.learning_preferences || [],
+        interests: finalData.interests || [],
+        age_estimate_grade: finalData.age_estimate_grade,
+        questionnaire_responses: finalData.placement_answers || {},
+        readiness_score: finalData.placement_scores?.overall || 0,
+        recommended_grade: finalData.age_estimate_grade,
+        homeschooled_before: finalData.homeschooled_before || false,
+        learning_challenges: finalData.special_needs_details || null,
+        preferred_pace: finalData.preferred_pace || 'Average',
+        schedule_type: finalData.schedule_type || 'Full-Time',
+        biblical_studies: finalData.biblical_studies ?? true,
+        character_focus: finalData.character_focus || [],
+        technology_access: finalData.technology_access || {},
         extracurricular_interests: finalData.extracurricular_interests || [],
-        language_learning:       finalData.language_learning || [],
-        special_needs:           finalData.special_needs || [],
-        special_needs_details:   finalData.special_needs_details || null,
-      };
-
-      if (existingLP) {
-        await supabase.from('learning_profiles').update(lpPayload).eq('id', existingLP.id);
-      } else {
-        await supabase.from('learning_profiles').insert(lpPayload);
-      }
-
-      // 5. Mark onboarding complete on profile
-      await supabase
-        .from('profiles')
-        .update({ onboarding_complete: true, onboarding_step: 5 })
-        .eq('id', userId);
+        language_learning: finalData.language_learning || [],
+        status: 'Completed',
+        admin_override_grade: null,
+      });
 
       clearProgress();
       setAppState('success');

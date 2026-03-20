@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { GraduationCap, Home, Users, UserCircle, LogOut, Brain, Gamepad2, Activity, Settings } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import ActivityMonitor from '@/components/monitoring/ActivityMonitor';
 
@@ -11,54 +11,27 @@ const OWNER_EMAIL = 'jarivera43019@gmail.com';
 
 export default function Layout({ children, currentPageName }) {
   const [user, setUser] = React.useState(null);
-  const [profile, setProfile] = React.useState(null);
 
   React.useEffect(() => {
     loadUser();
-
-    // Keep user state in sync with Supabase session changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        setUser(session.user);
-        loadProfile(session.user.id);
-      } else {
-        setUser(null);
-        setProfile(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
   }, []);
 
   const loadUser = async () => {
     try {
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      const currentUser = await base44.auth.me();
       if (currentUser) {
         setUser(currentUser);
-        loadProfile(currentUser.id);
       }
     } catch (error) {
       console.error('Layout: failed to load user', error);
     }
   };
 
-  const loadProfile = async (userId) => {
-    try {
-      const { data } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
-        .single();
-      if (data) setProfile(data);
-    } catch (e) {}
+  const handleLogout = () => {
+    base44.auth.logout('/GetStarted');
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/GetStarted';
-  };
-
-  const isAdmin = profile?.role === 'admin' || profile?.role === 'platform_owner';
+  const isAdmin = user?.role === 'admin';
   const isOwner = user?.email === OWNER_EMAIL;
 
   return (

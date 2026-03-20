@@ -6,60 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GraduationCap, Sparkles, Users, BookOpen, Heart, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
-import { supabase } from '@/lib/supabase';
+import { base44 } from '@/api/base44Client';
 
 export default function GetStarted() {
-  const [mode, setMode]         = useState('signup'); // 'signup' | 'signin'
-  const [email, setEmail]       = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState('');
-
-  const handleSignUp = async (e) => {
-    e.preventDefault();
-    setError('');
-    if (!fullName.trim()) { setError('Please enter your full name.'); return; }
-    if (password.length < 8) { setError('Password must be at least 8 characters.'); return; }
-    setLoading(true);
-    try {
-      const { error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { full_name: fullName, role: 'parent' } },
-      });
-      if (signUpError) throw signUpError;
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        sessionStorage.setItem('sb_access_token', session.access_token);
-        sessionStorage.setItem('sb_refresh_token', session.refresh_token);
-      }
-      window.location.href = '/StudentOnboarding';
-    } catch (err) {
-      setError(err.message || 'Sign up failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSignIn = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-      if (signInError) throw signInError;
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        sessionStorage.setItem('sb_access_token', session.access_token);
-        sessionStorage.setItem('sb_refresh_token', session.refresh_token);
-      }
-      window.location.href = '/StudentOnboarding';
-    } catch (err) {
-      setError(err.message || 'Sign in failed. Please check your credentials.');
-    } finally {
-      setLoading(false);
-    }
+  const handleSignIn = () => {
+    base44.auth.redirectToLogin(window.location.origin + '/StudentOnboarding');
   };
 
   const features = [
@@ -111,96 +62,30 @@ export default function GetStarted() {
           <Card className="shadow-2xl w-full">
             <CardHeader className="border-b bg-gradient-to-r from-purple-600 to-blue-600 text-white">
               <CardTitle className="text-2xl text-center">
-                {mode === 'signup' ? 'Begin Enrollment' : 'Welcome Back'}
+Begin Enrollment
               </CardTitle>
               <p className="text-center text-sm opacity-90 mt-2">
-                {mode === 'signup'
-                  ? "Create your secure RLCA parent account and start your child's enrollment application."
-                  : 'Sign in to continue your enrollment or access your dashboard.'}
+Sign in to start your child's enrollment application or access your dashboard.
               </p>
             </CardHeader>
             <CardContent className="p-6">
 
-              {/* Mode toggle */}
-              <div className="flex rounded-lg border border-gray-200 p-1 mb-6">
-                <button
-                  onClick={() => { setMode('signup'); setError(''); }}
-                  className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                    mode === 'signup' ? 'bg-purple-600 text-white shadow' : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  Create Account
-                </button>
-                <button
-                  onClick={() => { setMode('signin'); setError(''); }}
-                  className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                    mode === 'signin' ? 'bg-purple-600 text-white shadow' : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  Sign In
-                </button>
+
+
+              <Button
+                onClick={handleSignIn}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                size="lg"
+              >
+                Sign In to Get Started
+              </Button>
+
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                <p className="text-sm text-gray-700 text-center">
+                  <strong>Next Step:</strong> After signing in, you'll complete a brief
+                  enrollment and placement application so we can create your student's official record.
+                </p>
               </div>
-
-              {/* Error */}
-              {error && (
-                <div className="flex items-center gap-2 p-3 mb-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  {error}
-                </div>
-              )}
-
-              <form onSubmit={mode === 'signup' ? handleSignUp : handleSignIn} className="space-y-4">
-                {mode === 'signup' && (
-                  <div>
-                    <Label>Parent/Guardian Full Name</Label>
-                    <Input
-                      value={fullName}
-                      onChange={e => setFullName(e.target.value)}
-                      placeholder="John Smith"
-                      required
-                    />
-                  </div>
-                )}
-                <div>
-                  <Label>Email Address</Label>
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="parent@example.com"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label>Password</Label>
-                  <Input
-                    type="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder={mode === 'signup' ? 'Min. 8 characters' : 'Your password'}
-                    required
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                  size="lg"
-                >
-                  {loading
-                    ? (mode === 'signup' ? 'Creating account...' : 'Signing in...')
-                    : (mode === 'signup' ? 'Create Account & Begin Enrollment' : 'Sign In')}
-                </Button>
-              </form>
-
-              {mode === 'signup' && (
-                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-gray-700 text-center">
-                    <strong>Next Step:</strong> After creating your account, you'll complete a brief
-                    enrollment and placement application so we can create your student's official record.
-                  </p>
-                </div>
-              )}
             </CardContent>
           </Card>
         </motion.div>
