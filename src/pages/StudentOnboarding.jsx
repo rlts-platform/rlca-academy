@@ -100,7 +100,8 @@ export default function StudentOnboarding() {
     let mounted = true;
     const bootstrap = async () => {
       try {
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        const { data: { session }, error: authError } = await supabase.auth.getSession();
+        const user = session?.user;
         if (authError || !user) {
           window.location.href = '/GetStarted';
           return;
@@ -517,4 +518,4 @@ export default function StudentOnboarding() {
       </div>
     </div>
   );
-} 
+}
