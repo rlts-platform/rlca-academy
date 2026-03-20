@@ -15,6 +15,10 @@ export default function HomePage() {
     const loadUser = async () => {
       try {
         const currentUser = await base44.auth.me();
+        if (currentUser) {
+          window.location.href = '/ParentDashboard';
+          return;
+        }
         setUser(currentUser);
       } catch (error) {
         // User not logged in
@@ -22,11 +26,6 @@ export default function HomePage() {
     };
     loadUser();
   }, []);
-
-  if (user) {
-    window.location.href = '/ParentDashboard';
-    return null;
-  }
 
   const features = [
     {
