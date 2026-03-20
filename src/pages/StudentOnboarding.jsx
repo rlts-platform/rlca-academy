@@ -215,7 +215,7 @@ export default function StudentOnboarding() {
 
     try {
       // Create Student record
-      await base44.entities.Student.create({
+      const student = await base44.entities.Student.create({
         full_name: `${finalData.legal_first_name} ${finalData.legal_last_name}`,
         age: finalData.age,
         grade_level: finalData.age_estimate_grade,
@@ -224,6 +224,15 @@ export default function StudentOnboarding() {
         student_email: null,
         profile_image: null,
         learning_plan_notes: finalData.additional_notes || null,
+      });
+
+      // Create the ParentChildLink so the student appears on Parent Dashboard
+      await base44.entities.ParentChildLink.create({
+        parent_email: currentUser.email,
+        student_id: student.id,
+        student_name: `${finalData.legal_first_name} ${finalData.legal_last_name}`,
+        relationship_type: 'Parent',
+        status: 'Active',
       });
 
       // Create StudentOnboarding record
