@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,24 @@ import { motion } from "framer-motion";
 import { base44 } from '@/api/base44Client';
 
 export default function HomePage() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+      } catch (error) {
+        // User not logged in
+      }
+    };
+    loadUser();
+  }, []);
+
+  if (user) {
+    window.location.href = '/ParentDashboard';
+    return null;
+  }
 
   const features = [
     {
@@ -113,59 +131,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Call to Action Portal */}
-      <section className="max-w-7xl mx-auto px-6 py-16">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <div className="text-center mb-8">
-            <h2 className="text-4xl font-bold text-gray-900 mb-3">Begin Your Journey</h2>
-            <p className="text-lg text-gray-600">Access your personalized learning portal</p>
-          </div>
 
-          <div className="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="shadow-2xl hover:shadow-3xl transition-shadow">
-              <CardHeader className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
-                <CardTitle className="text-center">New Family</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 text-center">
-                <Sparkles className="w-16 h-16 text-purple-600 mx-auto mb-4" />
-                <p className="text-gray-600 mb-6">
-                  Start with our student placement questionnaire to find the perfect grade level and learning path.
-                </p>
-                <Button
-                  onClick={() => base44.auth.redirectToLogin(window.location.origin + '/StudentOnboarding')}
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                  size="lg"
-                >
-                  Get Started
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-2xl hover:shadow-3xl transition-shadow">
-              <CardHeader className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
-                <CardTitle className="text-center">Returning Family</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 text-center">
-                <Users className="w-16 h-16 text-blue-600 mx-auto mb-4" />
-                <p className="text-gray-600 mb-6">
-                  Sign in to access your dashboard, view progress, and continue your learning journey.
-                </p>
-                <Button
-                  onClick={() => base44.auth.redirectToLogin()}
-                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-                  size="lg"
-                >
-                  Sign In
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </motion.div>
-      </section>
 
       {/* Features Section */}
       <section className="max-w-7xl mx-auto px-6 py-16">
